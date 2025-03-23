@@ -1,0 +1,202 @@
+Running Your Rust-Based Earn Vault Application in WSL on Windows
+
+Since your application is built using Rust and Actix Web, running it in WSL (Windows Subsystem for Linux) requires setting up Rust, SQLite, and necessary dependencies within WSL. Follow the steps below:
+
+
+---
+
+Step 1: Install WSL (If Not Installed)
+
+If WSL is not installed on your Windows machine:
+
+1. Open PowerShell as Administrator and run:
+
+wsl --install
+
+
+2. Restart your PC if prompted.
+
+
+3. Open Windows Terminal and run:
+
+wsl
+
+This will launch Ubuntu or the default WSL distribution.
+
+
+
+
+---
+
+Step 2: Update WSL and Install Required Dependencies
+
+Inside WSL, update your package list and install dependencies:
+
+sudo apt update && sudo apt upgrade -y
+sudo apt install build-essential curl git libssl-dev pkg-config sqlite3 -y
+
+
+---
+
+Step 3: Install Rust
+
+Rust is required to compile and run your application. Install it using Rustup:
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+After installation, restart your shell or run:
+
+source $HOME/.cargo/env
+
+Verify installation:
+
+rustc --version
+cargo --version
+
+
+---
+
+Step 4: Clone or Transfer Your Earn Vault Project
+
+If your project is on GitHub, clone it inside WSL:
+
+git clone https://github.com/your-username/earn_vault.git
+cd earn_vault
+
+Or, if the files are on Windows, move them into WSL:
+
+1. Find your project path on Windows:
+
+C:\Users\YourName\Documents\earn_vault
+
+
+2. Move to WSL directory (/mnt/c/Users/YourName/Documents/earn_vault)
+
+cd /mnt/c/Users/YourName/Documents/earn_vault
+
+
+
+
+---
+
+Step 5: Install Project Dependencies
+
+Navigate to the project folder and install dependencies:
+
+cargo build
+
+If your project uses a database (SQLite, PostgreSQL, MySQL), ensure it's installed and set up:
+
+sqlite3 database.db
+
+Run migration scripts if applicable.
+
+
+---
+
+Step 6: Run the Application
+
+Once everything is set, start the application:
+
+cargo run
+
+It should now be running on http://127.0.0.1:8080.
+
+
+---
+
+Step 7: Access Your Application from Windows
+
+Since WSL runs in a virtualized Linux environment, access it using Windows Browser or Terminal:
+
+1. In Windows Browser: Open
+
+http://127.0.0.1:8080
+
+
+2. Check Running Ports:
+
+netstat -tulnp
+
+
+3. Stop the Server (if needed):
+Press CTRL + C in the terminal.
+
+
+
+
+---
+
+Step 8: Set Up Automatic Data Backup (Every 1 Hour)
+
+Since you requested data backups every hour, add a cron job inside WSL:
+
+1. Open the crontab editor:
+
+crontab -e
+
+
+2. Add this line at the bottom:
+
+0 * * * * cp database.db backups/database_$(date +\%Y-\%m-\%d_\%H:\%M).db
+
+This command backs up the SQLite database every hour into a backups/ directory.
+
+You can modify it to back up JSON, logs, or other files.
+
+
+
+3. Save and exit (CTRL + X, then Y, then ENTER).
+
+
+
+
+---
+
+Step 9: Run in Background (Optional)
+
+If you want the server to keep running after closing WSL, use tmux or nohup:
+
+tmux new -s earnvault
+cargo run
+
+Press CTRL + B, then D to detach.
+
+To reconnect later, run:
+
+tmux attach -t earnvault
+
+Alternatively, use:
+
+nohup cargo run > output.log 2>&1 &
+
+
+---
+
+Step 10: (Optional) Expose to Windows or External Devices
+
+By default, WSL runs on localhost. If you want to access it from other devices on the network:
+
+1. Edit main.rs to bind to all network interfaces:
+
+.bind("0.0.0.0:8080")?
+
+
+2. Find your WSL IP Address:
+
+ip addr show eth0
+
+
+3. Open the browser on Windows and enter:
+
+http://WSL_IP:8080
+
+
+
+
+---
+
+That's it! 🎉 Your Earn Vault application is now running in WSL!
+
+Let me know if you need further assistance.
+

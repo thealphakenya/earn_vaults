@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - EarnVault</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-bg">
+    <div class="container">
+        <h2>Admin Dashboard</h2>
+        <div class="stats">
+            <p>Total Users: <span id="total_users">0</span></p>
+            <p>Users Online: <span id="online_users">0</span></p>
+            <p>Total Balance: Ksh <span id="total_balance">0.00</span></p>
+        </div>
+
+        <button onclick="window.location.href='/admin/ai'">EarnVault AI</button>
+        <button onclick="window.location.href='/admin/tasks'">Manage Tasks</button>
+        <button onclick="window.location.href='/admin/messages'">View Messages</button>
+
+        <h3>Withdrawals Management</h3>
+        <div class="withdrawals-section">
+            <button id="allow_withdrawals" class="active" onclick="toggleWithdrawals(true)">Allow Withdrawals</button>
+            <button id="disable_withdrawals" class="inactive" onclick="toggleWithdrawals(false)">Disable Withdrawals</button>
+        </div>
+    </div>
+
+    <script>
+        async function fetchDashboardStats() {
+            const response = await fetch('/admin/dashboard');
+            const data = await response.json();
+            
+            document.getElementById("total_users").innerText = data.total_users;
+            document.getElementById("online_users").innerText = data.online_users;
+            document.getElementById("total_balance").innerText = data.total_balance;
+        }
+        
+        fetchDashboardStats();
+
+        async function toggleWithdrawals(enable) {
+            const response = await fetch("/admin/toggle_withdrawals", {
+                method: "POST",
+                headers: { "Authorization": "Bearer your-secure-token" },
+                body: JSON.stringify({ enable })
+            });
+
+            if (response.ok) {
+                if (enable) {
+                    document.getElementById("allow_withdrawals").classList.add("active");
+                    document.getElementById("allow_withdrawals").classList.remove("inactive");
+                    document.getElementById("disable_withdrawals").classList.add("inactive");
+                    document.getElementById("disable_withdrawals").classList.remove("active");
+                } else {
+                    document.getElementById("disable_withdrawals").classList.add("active");
+                    document.getElementById("disable_withdrawals").classList.remove("inactive");
+                    document.getElementById("allow_withdrawals").classList.add("inactive");
+                    document.getElementById("allow_withdrawals").classList.remove("active");
+                }
+            } else {
+                alert("Failed to update withdrawal status.");
+            }
+        }
+    </script>
+
+    <style>
+        .withdrawals-section {
+            margin-top: 20px;
+        }
+        .withdrawals-section button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s ease;
+        }
+        .active {
+            background-color: limegreen;
+            color: white;
+        }
+        .inactive {
+            background-color: gray;
+            color: white;
+        }
+    </style>
+</body>
+</html>

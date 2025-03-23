@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - EarnVault</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-bg">
+    <div class="container">
+        <h2>Sign Up</h2>
+        <form action="/signup" method="POST">
+            <label for="full_name">Full Name</label>
+            <input type="text" id="full_name" name="full_name" required>
+
+            <label for="birth_place">Place of Birth</label>
+            <input type="text" id="birth_place" name="birth_place" required>
+
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" name="dob" required>
+
+            <label for="residence">Place of Stay</label>
+            <input type="text" id="residence" name="residence" required>
+
+            <label for="phone">Phone Number</label>
+            <input type="text" id="phone" name="phone" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender" required>
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+
+            <label for="nationality">Nationality</label>
+            <input type="text" id="nationality" name="nationality" required>
+
+            <label for="education">Highest Education Level</label>
+            <input type="text" id="education" name="education" required>
+
+            <label for="next_of_kin">Next of Kin Name</label>
+            <input type="text" id="next_of_kin" name="next_of_kin" required>
+
+            <label for="kin_phone">Next of Kin Phone</label>
+            <input type="text" id="kin_phone" name="kin_phone" required>
+
+            <label for="security_question">Security Question</label>
+            <input type="text" id="security_question" name="security_question" required>
+
+            <label for="username">Choose a Username</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Create Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Sign Up</button>
+        </form>
+    </div>
+</body>
+</html>

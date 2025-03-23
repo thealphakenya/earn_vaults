@@ -1,0 +1,42 @@
+[package]
+name = "earn_vault"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web framework
+actix-web = "4"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+
+# Database (SQLite with bundled support)
+rusqlite = { version = "0.28", features = ["bundled"] }
+
+# Date and time utilities
+chrono = { version = "0.4", features = ["serde"] }
+
+# AI Dependencies
+rust-bert = "0.21.0"  # Pretrained NLP models for AI features
+tch = "0.13.0"  # Updated to match rust-bert dependencies
+openai = "1.0"  # OpenAI API for chat and automation
+
+# Authentication (if needed)
+jsonwebtoken = "9"  # JWT support
+
+# Environment variables (optional, but useful for secrets like API keys)
+dotenv = "0.15"
+
+# Logging
+log = "0.4"
+env_logger = "0.10"
+
+# Concurrency utilities
+async-trait = "0.1"
+
+# Filesystem utilities
+fs_extra = "1.3"
