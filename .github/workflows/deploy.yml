@@ -1,3 +1,10 @@
+name: Build, Push, and Deploy Earn Vault Image
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
