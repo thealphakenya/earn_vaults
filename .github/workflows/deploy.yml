@@ -1,9 +1,9 @@
-name: Build and Push Docker Image to Docker Hub
+name: Build and Push Docker Image
 
 on:
   push:
     branches:
-      - main  # Runs when pushing to the main branch
+      - main
 
 jobs:
   build:
