@@ -1,9 +1,9 @@
-name: Build, Push, and Deploy Docker Container
+name: Build and Push Docker Image to Docker Hub
 
 on:
   push:
     branches:
-      - main  # Runs on push to main branch
+      - main  # Runs when pushing to the main branch
 
 jobs:
   build:
@@ -25,20 +25,3 @@ jobs:
         context: .
         push: true
         tags: thekingkenya/earn_vault:latest
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build  # Runs only after the build job completes
-
-    steps:
-    - name: Deploy to Remote Server via SSH
-      uses: appleboy/ssh-action@v0.1.10
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        script: |
-          docker pull thekingkenya/earn_vault:latest
-          docker stop earn_vault || true
-          docker rm earn_vault || true
-          docker run -d --name earn_vault -p 80:8000 thekingkenya/earn_vault:latest
