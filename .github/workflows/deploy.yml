@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push, and Deploy Earn Vault Image
 
 on:
   push:
