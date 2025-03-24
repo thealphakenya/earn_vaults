@@ -1,38 +1,37 @@
-# Use an official Rust image as the base for building
+# Use an official Rust image as the builder
 FROM rust:latest AS builder
 
-# Set the working directory inside the container
+# Set the working directory for the Rust project
 WORKDIR /app
 
-# Copy Cargo files first to leverage Docker's caching mechanism
-COPY Cargo.toml Cargo.lock ./
+# Copy the Cargo.toml and Cargo.lock files into the container
+COPY ["Cargo.toml", "Cargo.lock", "./"]
 
-# Ensure Cargo.lock exists before proceeding
-RUN test -f Cargo.lock || (echo "Cargo.lock not found!" && exit 1)
-
-# Create a dummy src directory to allow dependencies to be fetched
+# Create a temporary src directory to allow dependency caching
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 
-# Fetch dependencies and build to optimize caching
+# Build dependencies to cache them
 RUN cargo build --release
 
-# Copy the actual source code
-COPY . .
+# Now copy the rest of the source code
+COPY ./src ./src
 
-# Rebuild the application with actual source
+# Build the actual project
 RUN cargo build --release
 
-# Use a smaller base image for deployment
+# Use a smaller image for the final image
 FROM debian:buster-slim
 
-# Set working directory
-WORKDIR /app
+# Install necessary libraries (if any)
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libpq-dev
 
 # Copy the compiled binary from the builder stage
-COPY --from=builder /app/target/release/earn_vault .
+COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
 
-# Expose the necessary port
-EXPOSE 8000
+# Set the entrypoint for the container
+ENTRYPOINT ["/usr/local/bin/earn_vault"]
 
-# Command to run the application
-CMD ["./earn_vault"]
+# Expose any required ports (if necessary)
+EXPOSE 8080
