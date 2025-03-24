@@ -1,0 +1,21 @@
+# Ignore target directory (compiled binaries)
+target/
+
+# Ignore build artifacts
+**/*.rs.bk
+**/*.o
+**/*.so
+**/*.d
+
+# Ignore dependencies
+Cargo.lock
+Cargo.toml.orig
+
+# Ignore hidden files and directories
+.*  
+!.gitignore  # Allow .gitignore but ignore other dotfiles  
+!.dockerignore  # Ensure this file is included  
+
+# Ignore Git repository files
+.git/
+.gitignore
