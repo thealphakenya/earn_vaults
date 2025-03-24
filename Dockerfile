@@ -1,34 +1,38 @@
-# Use an official Rust image as the base
+# Use an official Rust image for building
 FROM rust:latest AS builder
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the Cargo files separately to leverage Docker's caching mechanism
-COPY Cargo.toml Cargo.lock ./
+# Ensure the Docker build context includes Cargo.lock
+COPY ./Cargo.toml ./Cargo.lock ./
 
-# Create a dummy src directory to allow dependencies to be fetched
+# Create a temporary src directory to allow dependency caching
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 
-# Fetch dependencies and compile them to optimize caching
+# Fetch dependencies and compile them for caching
 RUN cargo build --release
 
-# Copy the actual source code
+# Remove the dummy source code and copy the actual source code
+RUN rm -r src
 COPY . .
 
 # Rebuild the application with the actual source code
 RUN cargo build --release
 
-# Use a smaller base image for deployment (reducing image size)
+# Use a smaller base image for deployment
 FROM debian:buster-slim
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/target/release/earn_vault .
 
-# Expose the port (update this if your app runs on a different port)
+# Ensure the binary has execution permissions
+RUN chmod +x /app/earn_vault
+
+# Expose the application port
 EXPOSE 8000
 
 # Run the compiled binary
