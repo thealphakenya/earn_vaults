@@ -1,19 +1,23 @@
----
-
-### **5. `.gitignore`** (Ignore Unnecessary Files)  
-**File Path:** `.gitignore`  
-
-```gitignore
+# Ignore Rust build files and target binaries
 target/
-Cargo.lock
-.env
-*.sqlite
-*.log
-pytorch_env/
-"cpython/" 
-echo "Miniconda3-latest-Linux-x86_64.sh" >> .gitignore
-git add .gitignore
-git commit -m "Updated .gitignore to exclude large files"
-git push origin master
+*.rs.bk
 
-"Miniconda3-latest-Linux-x86_64.sh" 
+# Ignore Cargo lock file
+Cargo.lock
+
+# Ignore environment files and secrets
+.env
+secrets/
+
+# Ignore SQLite database files
+*.sqlite
+
+# Ignore log files
+*.log
+
+# Ignore Python virtual environment directories
+pytorch_env/
+cpython/
+
+# Ignore Miniconda installer
+Miniconda3-latest-Linux-x86_64.sh
