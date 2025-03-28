@@ -1,4 +1,4 @@
-name: Deploy to Railway
+name: Railway Auto-Deploy & Debug  # Updated workflow name
 
 on:
   push:
@@ -9,35 +9,28 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-<<<<<<< HEAD
-      contents: write
-=======
       contents: write  # Ensures repo access
->>>>>>> 1233acd (Fix deploy issue)
       actions: write
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 1  # Fetch only the latest commit
 
-      - name: Debug Secrets
+      - name: Debug GitHub Secrets
         run: |
-          if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
-            echo "❌ RAILWAY_TOKEN is missing!"
+          echo "Checking secrets..."
+          if [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "❌ RAILWAY_TOKEN is missing! Add it in GitHub Secrets."
             exit 1
           fi
-          echo "✅ RAILWAY_TOKEN is set."
+          if [ -z "${{ secrets.GH_PAT }}" ]; then
+            echo "❌ GH_PAT is missing! Add it in GitHub Secrets."
+            exit 1
+          fi
+          echo "✅ Secrets are available."
 
-<<<<<<< HEAD
-      - name: Deploy via API
-        run: |
-          curl -X POST "https://api.railway.app/graphql/v2" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            --data-raw '{"query":"mutation { deployProject(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id } }"}'
-=======
       - name: Configure Git Authentication
         run: |
           git config --global user.email "github-actions@github.com"
@@ -58,9 +51,8 @@ jobs:
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
 
       - name: Deploy to Railway
-        uses: jzeuzs/action-railway@v1.1.4
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up --token ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Debug Deployment
         if: failure()
@@ -69,4 +61,3 @@ jobs:
           git status
           git remote -v
           git log --oneline -n 5
->>>>>>> 1233acd (Fix deploy issue)
