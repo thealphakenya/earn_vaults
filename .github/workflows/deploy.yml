@@ -8,11 +8,35 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Ensures proper permissions for repo access
+      actions: write
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1  # Fetch only the latest commit
+
+      - name: Debug GitHub Secrets
+        run: |
+          echo "Checking secrets..."
+          if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
+            echo "❌ RAILWAY_TOKEN is missing! Add it in GitHub Secrets."
+            exit 1
+          fi
+          if [[ -z "${{ secrets.GH_PAT }}" ]]; then
+            echo "❌ GH_PAT is missing! Add it in GitHub Secrets."
+            exit 1
+          fi
+          echo "✅ Secrets are available."
+
+      - name: Set Up Git Authentication
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
+          git fetch --unshallow
 
       - name: Install Railway CLI
         run: |
@@ -23,3 +47,11 @@ jobs:
         uses: jzeuzs/action-railway@v1.1.4
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Debug Git Logs
+        if: failure()
+        run: |
+          echo "🔍 Debugging Git logs..."
+          git status
+          git log --oneline -n 5
+          git branch -a
