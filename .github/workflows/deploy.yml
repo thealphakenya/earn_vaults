@@ -9,47 +9,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  
+      contents: write
       actions: write
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1  
+          fetch-depth: 1
 
-      - name: Debug GitHub Secrets
+      - name: Debug Secrets
         run: |
           if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
-            echo "❌ RAILWAY_TOKEN is missing! Add it in GitHub Secrets."
+            echo "❌ RAILWAY_TOKEN is missing!"
             exit 1
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      - name: Deploy Project via Railway API
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          PROJECT_ID: "f048f3ca-1331-4931-bc33-063e0894822c"
+      - name: Deploy via API
         run: |
-          echo "🚀 Deploying project to Railway..."
-          RESPONSE=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
+          curl -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer $RAILWAY_TOKEN" \
-            --data-raw "{\"query\":\"mutation { deployProject(id: \\\"$PROJECT_ID\\\") { id } }\"}")
-          
-          echo "🔍 Railway Response: $RESPONSE"
-          
-          if echo "$RESPONSE" | grep -q '"errors"'; then
-            echo "❌ Deployment failed!"
-            exit 1
-          else
-            echo "✅ Deployment triggered successfully!"
-          fi
-
-      - name: Debug Git Logs on Failure
-        if: failure()
-        run: |
-          echo "🔍 Debugging Git logs..."
-          git status
-          git log --oneline -n 5
-          git branch -a
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            --data-raw '{"query":"mutation { deployProject(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id } }"}'
