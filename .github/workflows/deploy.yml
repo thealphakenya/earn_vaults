@@ -12,17 +12,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensures full repository history
+          fetch-depth: 0  # Fixes shallow clone issues
 
       - name: Configure Git
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-      
+
       - name: Ensure Main Branch is Set
         run: |
           git remote set-url origin https://github.com/${{ github.repository }}.git
-          git fetch --unshallow
+          git fetch --all
           git checkout main
 
       - name: Deploy to Railway
