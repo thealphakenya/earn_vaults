@@ -5,6 +5,7 @@ use tokio::time::{interval, Duration};
 use std::fs;
 use chrono::Utc;
 use std::path::Path;
+use rusqlite::Connection;
 
 mod auth;
 mod tasks;
@@ -12,6 +13,7 @@ mod ai;
 mod admin;
 mod db;
 
+// Authentication function
 async fn authenticate(req: HttpRequest) -> bool {
     if let Some(auth_header) = req.headers().get("Authorization") {
         if auth_header == "Bearer your-secure-token" {
@@ -23,12 +25,12 @@ async fn authenticate(req: HttpRequest) -> bool {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let app_data = db::init_database().expect("Failed to initialize DB");
+    let db_conn = db::init_database().expect("Failed to initialize DB");
     let ai_manager = Arc::new(TokioMutex::new(ai::AIManager::new("your-openai-api-key")));
     let withdrawals_enabled = Arc::new(Mutex::new(true)); // Withdrawals enabled by default
 
-    // Start backup system in background
-    let db_clone = app_data.clone();
+    // Start backup system in the background
+    let db_clone = db_conn.clone();
     tokio::spawn(async move {
         let mut backup_timer = interval(Duration::from_secs(3600)); // Run every 1 hour
         loop {
@@ -39,13 +41,13 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(app_data.clone()))
+            .app_data(web::Data::new(db_conn.clone()))
             .app_data(web::Data::new(ai_manager.clone()))
             .app_data(web::Data::new(withdrawals_enabled.clone()))
-            .configure(auth::config)
-            .configure(tasks::config)
-            .configure(ai::config)
-            .configure(admin::config)
+            .configure(|cfg| auth::config(cfg, db_conn.clone()))
+            .configure(|cfg| tasks::config(cfg, db_conn.clone()))
+            .configure(|cfg| ai::config(cfg, ai_manager.clone()))
+            .configure(|cfg| admin::config(cfg, db_conn.clone()))
             .route("/", web::get().to(home))
             .route("/diagnose", web::post().to(diagnose_issue))
             .route("/auto-fix", web::post().to(auto_fix_issue))
@@ -146,7 +148,7 @@ async fn handle_withdrawal(
 }
 
 // Backup Database
-fn backup_database(_db: &db::Database) {
+fn backup_database(db: &Connection) {
     let backup_dir = "./backups/";
 
     if !Path::new(backup_dir).exists() {

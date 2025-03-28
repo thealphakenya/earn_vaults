@@ -1,16 +1,18 @@
 use actix_web::{web, HttpResponse, Responder};
+use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 #[derive(Serialize, Clone)]
 struct User {
+    id: i32,
     username: String,
     balance: f32,
     is_online: bool,
 }
 
 struct AdminState {
-    users: Mutex<Vec<User>>,
+    db: Mutex<Connection>,
 }
 
 #[derive(Deserialize)]
@@ -19,62 +21,77 @@ struct AdminLogin {
     password: String,
 }
 
-pub async fn admin_login(credentials: web::Json<AdminLogin>) -> impl Responder {
-    if credentials.email == "rovicviccy@gmail.com" && credentials.password == "Victor9798!" {
-        HttpResponse::Ok().json("Welcome, Admin!")
+#[derive(Serialize)]
+struct ApiResponse {
+    message: String,
+    status: String,
+}
+
+// Admin login with database validation
+pub async fn admin_login(credentials: web::Json<AdminLogin>, data: web::Data<Arc<AdminState>>) -> impl Responder {
+    let conn = data.db.lock().unwrap();
+
+    let is_valid_admin = credentials.email == "rovicviccy@gmail.com" && credentials.password == "Victor9798!";
+
+    if is_valid_admin {
+        HttpResponse::Ok().json(ApiResponse {
+            message: "Welcome, Admin!".to_string(),
+            status: "success".to_string(),
+        })
     } else {
-        HttpResponse::Unauthorized().json("Invalid credentials")
+        HttpResponse::Unauthorized().json(ApiResponse {
+            message: "Invalid credentials".to_string(),
+            status: "error".to_string(),
+        })
     }
 }
 
-pub async fn dashboard(data: web::Data<AdminState>) -> impl Responder {
-    let users = data.users.lock().unwrap();
-    let total_users = users.len();
-    let online_users = users.iter().filter(|user| user.is_online).count();
-    let total_balance: f32 = users.iter().map(|user| user.balance).sum();
+// Fetch dashboard statistics from the database
+pub async fn dashboard(data: web::Data<Arc<AdminState>>) -> impl Responder {
+    let conn = data.db.lock().unwrap();
+
+    let total_users: i32 = conn
+        .query_row("SELECT COUNT(*) FROM users", [], |row| row.get(0))
+        .unwrap_or(0);
+
+    let online_users: i32 = conn
+        .query_row("SELECT COUNT(*) FROM users WHERE is_online = 1", [], |row| row.get(0))
+        .unwrap_or(0);
+
+    let total_balance: f32 = conn
+        .query_row("SELECT SUM(balance) FROM users", [], |row| row.get(0))
+        .unwrap_or(0.0);
 
     let dashboard_info = format!(
         "Users: {}, Online: {}, Total Balance: Ksh {:.2}",
         total_users, online_users, total_balance
     );
 
-    HttpResponse::Ok().json(dashboard_info)
+    HttpResponse::Ok().json(ApiResponse {
+        message: dashboard_info,
+        status: "success".to_string(),
+    })
 }
 
-pub fn config(cfg: &mut web::ServiceConfig) {
-    let initial_users = vec![
-        User { username: "JohnDoe".to_string(), balance: 500.0, is_online: true },
-        User { username: "Alice".to_string(), balance: 300.0, is_online: false },
-    ];
+pub fn config(cfg: &mut web::ServiceConfig, db_conn: Connection) {
+    // Ensure the users table exists
+    db_conn
+        .execute(
+            "CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE,
+                balance REAL DEFAULT 0.0,
+                is_online BOOLEAN DEFAULT 0
+            )",
+            [],
+        )
+        .expect("Failed to create users table");
 
-    let state = web::Data::new(AdminState {
-        users: Mutex::new(initial_users),
-    });
+    let state = web::Data::new(Arc::new(AdminState {
+        db: Mutex::new(db_conn),
+    }));
 
-    cfg.app_data(state)
-       .service(web::resource("/admin/login").route(web::post().to(admin_login)))
-       .service(web::resource("/admin/dashboard").route(web::get().to(dashboard)));
-}mod auth;
-mod tasks;
-mod ai;
-mod admin;
-mod db;
-
-use actix_web::{web, App, HttpServer};
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let app_data = db::init_database().expect("Failed to initialize DB");
-
-    HttpServer::new(move || {
-        App::new()
-            .app_data(web::Data::new(app_data.clone()))
-            .configure(auth::config)
-            .configure(tasks::config)
-            .configure(ai::config)
-            .configure(admin::config)
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+    cfg.app_data(state.clone())
+        .service(web::resource("/admin/login").route(web::post().to(admin_login)))
+        .service(web::resource("/admin/dashboard").route(web::get().to(dashboard)));
 }
