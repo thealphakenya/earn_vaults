@@ -49,10 +49,15 @@ jobs:
         run: |
           curl -fsSL https://railway.app/install.sh | sh
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
+          source $HOME/.bashrc
+
+      - name: Authenticate Railway CLI
+        run: |
+          railway login --token "${{ secrets.RAILWAY_TOKEN }}"
 
       - name: Deploy to Railway
         run: |
-          railway up --token ${{ secrets.RAILWAY_TOKEN }}
+          railway up
 
       - name: Debug Deployment
         if: failure()
