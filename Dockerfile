@@ -5,7 +5,7 @@ FROM rust:latest AS builder
 WORKDIR /app
 
 # Install required dependencies for building
-RUN apt-get update && apt-get install -y pkg-config libssl-dev
+RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev
 
 # Copy Cargo files and fetch dependencies
 COPY Cargo.toml Cargo.lock ./
@@ -46,6 +46,10 @@ ENV $(cat .env | xargs)
 
 # Expose the application's port
 EXPOSE $PORT
+
+# Limit the memory available for the application to avoid OOM
+# Set this to ensure the application does not use too much memory during startup
+RUN ulimit -v 1048576  # Limit the virtual memory to ~1 GB (1,048,576 KB)
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/earn_vault"]
