@@ -1,48 +1,36 @@
-# Use an official Rust image for building
+# Use an official Rust image as the builder
 FROM rust:latest AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Install required dependencies with retries
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends pkg-config libssl-dev && \
-    rm -rf /var/lib/apt/lists/*
+# Install dependencies required for the build
+RUN apt-get update && apt-get install -y pkg-config libssl-dev
 
-# Copy Cargo files first to cache dependencies
-COPY Cargo.toml Cargo.lock ./
+# Copy Cargo files and fetch dependencies
+COPY Cargo.toml ./
+COPY Cargo.lock ./ || true  # Continue even if Cargo.lock is missing
 RUN mkdir src && echo "fn main() {}" > src/main.rs
-
-# Fetch dependencies separately (reduces unnecessary builds)
 RUN cargo fetch && cargo build --release
 
-# Copy actual source code and build the project
+# Copy source code and build the project
 COPY ./src ./src
-RUN cargo build --release && strip target/release/earn_vault
+RUN cargo build --release
 
-# Use a smaller base image for deployment
-FROM debian:buster-slim
+# Use a more stable Debian version for deployment
+FROM debian:bullseye-slim
 
-# Set non-interactive mode for installation (prevents hangs)
-ARG DEBIAN_FRONTEND=noninteractive
-
-# Use a faster mirror to fix package fetching issues
-RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.list
-
-# Install runtime dependencies with retry logic
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libssl-dev libpq-dev && \
+# Fix network issues: Change APT mirror and retry package installation if needed
+RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.list && \
+    apt-get update && apt-get install -y --no-install-recommends libssl-dev libpq-dev || \
+    (sleep 5 && apt-get install -y libssl-dev libpq-dev) && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy the compiled binary and check if it exists
+# Copy the compiled binary
 COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
-RUN if [ ! -f /usr/local/bin/earn_vault ]; then echo "ERROR: Binary not found!" && exit 1; fi
 
-# Expose port (Railway auto-assigns)
+# Expose the application's port
 EXPOSE 8080
-
-# Ensure proper execution permissions
-RUN chmod +x /usr/local/bin/earn_vault
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/earn_vault"]
