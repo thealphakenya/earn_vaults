@@ -1,4 +1,4 @@
-name: Deploy to Railway
+name: 🚀 Auto Deploy to Railway
 
 on:
   push:
