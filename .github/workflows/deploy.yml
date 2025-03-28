@@ -12,7 +12,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fixes shallow clone issues
+          fetch-depth: 0  # Ensures full repository history
 
       - name: Configure Git
         run: |
