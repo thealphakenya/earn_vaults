@@ -25,11 +25,27 @@ RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.
     apt-get install -y --no-install-recommends libssl-dev libpq-dev && \
     rm -rf /var/lib/apt/lists/*
 
+# Set working directory in the runtime container
+WORKDIR /app
+
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
 
+# Copy the existing .env file if present
+COPY .env .env
+
+# Ensure .env file exists and add default variables if missing
+RUN touch .env && \
+    echo "DATABASE_URL=${DATABASE_URL:-postgres://user:password@host:5432/dbname}" >> .env && \
+    echo "API_KEY=${API_KEY:-your-default-api-key}" >> .env && \
+    echo "SECRET_KEY=${SECRET_KEY:-your-secret}" >> .env && \
+    echo "PORT=${PORT:-8080}" >> .env
+
+# Load environment variables from .env file
+ENV $(cat .env | xargs)
+
 # Expose the application's port
-EXPOSE 8080
+EXPOSE $PORT
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/earn_vault"]
