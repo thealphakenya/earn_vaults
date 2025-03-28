@@ -15,8 +15,9 @@ jobs:
       - name: Install Railway CLI
         run: |
           curl -fsSL https://railway.app/install.sh | sh
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
 
       - name: Authenticate with Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service earn_vault
+        run: railway up
