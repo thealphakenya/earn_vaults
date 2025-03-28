@@ -1,4 +1,4 @@
-name: Railway Auto-Deploy & Debug  # Updated workflow name
+name: 🚀 Auto Deploy to Railway
 
 on:
   push:
@@ -9,60 +9,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Ensures repo access
+      contents: write
       actions: write
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1  # Fetch only the latest commit
+          fetch-depth: 1
 
-      - name: Debug GitHub Secrets
+      - name: Debug Secrets
         run: |
-          echo "Checking secrets..."
-          if [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
-            echo "❌ RAILWAY_TOKEN is missing! Add it in GitHub Secrets."
+          if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
+            echo "❌ RAILWAY_TOKEN is missing!"
             exit 1
           fi
-          if [ -z "${{ secrets.GH_PAT }}" ]; then
-            echo "❌ GH_PAT is missing! Add it in GitHub Secrets."
-            exit 1
-          fi
-          echo "✅ Secrets are available."
+          echo "✅ RAILWAY_TOKEN is set."
 
-      - name: Configure Git Authentication
+      - name: Deploy via API
         run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
-          git fetch --all --tags
-          git checkout main
-
-      - name: Debug Git Status
-        run: |
-          git status
-          git log --oneline -n 5
-          git branch -a
-
-      - name: Install Railway CLI
-        run: |
-          curl -fsSL https://railway.app/install.sh | sh
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-          source $HOME/.bashrc
-
-      - name: Authenticate Railway CLI
-        run: |
-          railway login --token "${{ secrets.RAILWAY_TOKEN }}"
-
-      - name: Deploy to Railway
-        run: |
-          railway up
-
-      - name: Debug Deployment
-        if: failure()
-        run: |
-          echo "🚨 Deployment failed. Checking logs..."
-          git status
-          git remote -v
-          git log --oneline -n 5
+          curl -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            --data-raw '{"query":"mutation { deployProject(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id } }"}'
