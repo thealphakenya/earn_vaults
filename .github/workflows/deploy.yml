@@ -12,7 +12,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1  # Only fetch the latest commit
+          fetch-depth: 1  # Fetch only the latest commit
 
       - name: Install Railway CLI
         run: |
