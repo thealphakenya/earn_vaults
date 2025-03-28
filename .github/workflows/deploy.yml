@@ -12,14 +12,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Railway CLI
+      - name: Install Railway CLI
         run: |
           curl -fsSL https://railway.app/install.sh | sh
 
       - name: Authenticate with Railway
-        run: |
-          railway login --token ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Deploy to Railway
-        run: |
-          railway up --service earn_vault
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service earn_vault
