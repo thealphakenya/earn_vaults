@@ -9,46 +9,44 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Ensures proper permissions for repo access
+      contents: write  
       actions: write
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1  # Fetch only the latest commit
+          fetch-depth: 1  
 
       - name: Debug GitHub Secrets
         run: |
-          echo "Checking secrets..."
           if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
             echo "❌ RAILWAY_TOKEN is missing! Add it in GitHub Secrets."
             exit 1
           fi
-          if [[ -z "${{ secrets.GH_PAT }}" ]]; then
-            echo "❌ GH_PAT is missing! Add it in GitHub Secrets."
+          echo "✅ RAILWAY_TOKEN is set."
+
+      - name: Deploy Project via Railway API
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          PROJECT_ID: "f048f3ca-1331-4931-bc33-063e0894822c"
+        run: |
+          echo "🚀 Deploying project to Railway..."
+          RESPONSE=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            --data-raw "{\"query\":\"mutation { deployProject(id: \\\"$PROJECT_ID\\\") { id } }\"}")
+          
+          echo "🔍 Railway Response: $RESPONSE"
+          
+          if echo "$RESPONSE" | grep -q '"errors"'; then
+            echo "❌ Deployment failed!"
             exit 1
+          else
+            echo "✅ Deployment triggered successfully!"
           fi
-          echo "✅ Secrets are available."
 
-      - name: Set Up Git Authentication
-        run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
-          git fetch --prune --unshallow
-
-      - name: Install Railway CLI
-        run: |
-          curl -fsSL https://railway.app/install.sh | sh
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-
-      - name: Deploy to Railway
-        uses: jzeuzs/action-railway@v1.1.4
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Debug Git Logs
+      - name: Debug Git Logs on Failure
         if: failure()
         run: |
           echo "🔍 Debugging Git logs..."
