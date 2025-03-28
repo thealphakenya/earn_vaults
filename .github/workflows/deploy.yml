@@ -11,17 +11,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1  # Only fetch latest commit, no need for full history
 
-      - name: Configure Git
+      - name: Install Railway CLI
         run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-
-      - name: Ensure Main Branch is Set
-        run: |
-          git remote set-url origin https://github.com/${{ github.repository }}.git
-          git fetch --all
-          git checkout main
+          curl -fsSL https://railway.app/install.sh | sh
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
 
       - name: Deploy to Railway
         uses: jzeuzs/action-railway@v1.1.4
