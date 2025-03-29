@@ -13,11 +13,13 @@ jobs:
       actions: write
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
+      # Step 2: Debug Secrets (check if the Railway token is set)
       - name: Debug Secrets
         run: |
           if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
@@ -26,52 +28,36 @@ jobs:
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
+      # Step 3: Build the Docker image
       - name: Build Docker image
         run: |
-          echo "Checking Docker version..."
-          docker --version  # Check if Docker is installed
           echo "Building Docker image..."
           docker build -t my-docker-image:${{ github.sha }} . || { echo "Docker build failed"; exit 1; }
-          docker images  # List images to check if the build was successful
+          echo "Docker image built successfully!"
 
+      # Step 4: Push Docker image to Docker Hub (or your Docker registry)
       - name: Push Docker image to Docker Hub
         run: |
-          echo "Checking Docker version..."
-          docker --version  # Check if Docker is installed
           echo "Pushing Docker image to Docker Hub..."
           docker push my-docker-image:${{ github.sha }} || { echo "Docker push failed"; exit 1; }
+          echo "Docker image pushed successfully!"
 
-      - name: Install Railway CLI
+      # Step 5: Deploy via Railway API using the pre-built Docker image
+      - name: Deploy via Railway API
         run: |
-          echo "Installing Railway CLI..."
-          curl -fsSL https://railway.app/install.sh | sh || { echo "Railway CLI installation failed"; exit 1; }
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-          echo "$HOME/.railway/bin" >> $GITHUB_ENV
-          railway --version  # Ensure the CLI is correctly installed
+          echo "Deploying to Railway using the Docker image..."
+          curl -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            --data-raw '{"query":"mutation { deployProject(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id } }"}' || { echo "Deployment to Railway failed"; exit 1; }
+          echo "Deployment initiated successfully!"
 
-      - name: Log into Railway
-        run: |
-          echo "Logging into Railway..."
-          railway login --token ${{ secrets.RAILWAY_TOKEN }} || { echo "Railway login failed"; exit 1; }
-
-      - name: Deploy to Railway using Docker Hub image
-        run: |
-          echo "Deploying to Railway..."
-          railway init || { echo "Railway project initialization failed"; exit 1; }
-          railway link || { echo "Railway project linking failed"; exit 1; }
-          railway up --image my-docker-image:${{ github.sha }} || { echo "Railway deployment failed"; exit 1; }
-
+      # Step 6: Debug Deployment (if failed)
       - name: Debug Deployment (if failed)
         if: failure()
         run: |
-          echo "🚨 Deployment failed. Checking logs..."
-          railway logs --tail || { echo "Failed to fetch Railway logs"; exit 1; }
-
-      - name: Install Dependencies (with detailed debugging)
-        run: |
-          echo "Updating apt sources and installing dependencies..."
-          set -x  # Enable command logging for debugging
-          sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.list
-          apt-get update || { echo "apt-get update failed"; exit 1; }
-          apt-get install -y --no-install-recommends libssl-dev libpq-dev || { echo "apt-get install failed"; exit 1; }
-          rm -rf /var/lib/apt/lists/* || { echo "Failed to clean up apt lists"; exit 1; }
+          echo "🚨 Deployment failed. Fetching logs from Railway..."
+          curl -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            --data-raw '{"query":"mutation { project(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id logs { tail } } }"}' || { echo "Failed to fetch Railway logs"; exit 1; }
