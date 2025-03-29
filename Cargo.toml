@@ -25,11 +25,11 @@ rust-bert = "0.21.0"  # Pretrained NLP models for AI features
 tch = "0.13.0"  # Updated to match rust-bert dependencies
 openai = "1.0"  # OpenAI API for chat and automation
 
-# Authentication (if needed)
+# Authentication
 jsonwebtoken = "9"  # JWT support
 
-# Environment variables (optional, but useful for secrets like API keys)
-dotenv = "0.15"
+# Environment variables
+dotenv = "0.15"  # For loading .env files
 
 # Logging
 log = "0.4"

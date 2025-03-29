@@ -6,6 +6,7 @@ use std::fs;
 use chrono::Utc;
 use std::path::Path;
 use rusqlite::Connection;
+use std::env;
 
 mod auth;
 mod tasks;
@@ -25,8 +26,15 @@ async fn authenticate(req: HttpRequest) -> bool {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Load environment variables
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let api_key = env::var("API_KEY").unwrap_or_else(|_| "default-api-key".to_string());
+
+    println!("Connected to database at {}", database_url);
+    println!("Using API key: {}", api_key);
+
     let db_conn = db::init_database().expect("Failed to initialize DB");
-    let ai_manager = Arc::new(TokioMutex::new(ai::AIManager::new("your-openai-api-key")));
+    let ai_manager = Arc::new(TokioMutex::new(ai::AIManager::new(&api_key)));
     let withdrawals_enabled = Arc::new(Mutex::new(true)); // Withdrawals enabled by default
 
     // Start backup system in the background

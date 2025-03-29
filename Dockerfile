@@ -8,12 +8,12 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev
 
 # Copy Cargo files and fetch dependencies
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml Cargo.lock ./ 
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo fetch
 
 # Copy source code and build the project
-COPY . .
+COPY . . 
 RUN cargo build --release
 
 # Use a smaller, more stable Debian version for deployment
@@ -31,21 +31,8 @@ WORKDIR /app
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
 
-# If .env file exists, copy it; otherwise, create it with default values
-COPY .env .env
-
-# Ensure .env file exists and add default variables if missing
-RUN touch .env && \
-    echo "DATABASE_URL=${DATABASE_URL:-postgres://user:password@host:5432/dbname}" >> .env && \
-    echo "API_KEY=${API_KEY:-your-default-api-key}" >> .env && \
-    echo "SECRET_KEY=${SECRET_KEY:-your-secret}" >> .env && \
-    echo "PORT=${PORT:-8080}" >> .env
-
-# Load environment variables from .env file
-ENV $(cat .env | xargs)
-
-# Expose the application's port
-EXPOSE $PORT
+# Expose the fixed port
+EXPOSE 8080
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/earn_vault"]
