@@ -13,6 +13,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Configure Docker to use a different mirror
+        run: |
+          sudo mkdir -p /etc/docker
+          echo '{ "registry-mirrors": ["https://mirror.gcr.io"] }' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -23,10 +29,6 @@ jobs:
 
       - name: Deploy to Railway
         env:
-          RAILWAY_TOKEN: "0c0aa75f-1170-4857-8d05-906e6867a7d1"
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
-          for i in {1..3}; do
-            railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0" && break
-            echo "Retrying deployment... Attempt $i"
-            sleep 10
-          done
+          railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0"
