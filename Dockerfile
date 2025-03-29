@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN cargo install railwayapp --locked
 
 # Verify Railway CLI installation
-RUN railway --version
+RUN /root/.cargo/bin/railway --version
 
 # Copy Cargo files and fetch dependencies
 COPY Cargo.toml Cargo.lock ./
@@ -40,13 +40,12 @@ RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.
     rm -rf /var/lib/apt/lists/*
 
 # Install Railway CLI via Cargo in the final stage
-RUN apt-get update && apt-get install -y curl sudo && \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     source $HOME/.cargo/env && \
     cargo install railwayapp --locked
 
 # Verify Railway CLI installation in the final stage
-RUN railway --version
+RUN /root/.cargo/bin/railway --version
 
 # Set working directory in the runtime container
 WORKDIR /app
