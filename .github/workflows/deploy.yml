@@ -33,6 +33,7 @@ jobs:
         uses: jzeuzs/action-railway@v1.1.4
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          args: "--service splendid-commitment"  # Service name specified
 
       # Step 4: Deploy via Railway API (with Retry)
       - name: 🚀 Trigger Deployment via API
@@ -43,7 +44,7 @@ jobs:
             RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-              --data-raw '{"query":"mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\") { id } }"}')
+              --data-raw '{"query":"mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"splendid-commitment\") { id } }"}')
 
             if [[ "$RESPONSE" == "200" ]]; then
               echo "✅ Deployment triggered successfully!"
