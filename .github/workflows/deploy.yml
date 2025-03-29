@@ -64,4 +64,4 @@ jobs:
           curl -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            --data-raw '{"query":"{ project(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\") { id logs { tail } } }"}
+            --data-raw '{"query":"{ project(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\") { id logs { tail } } }"}'
