@@ -19,7 +19,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      # Debug RAILWAY_TOKEN to ensure it's available
       - name: Debug Secrets
         run: |
           if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
@@ -28,30 +27,17 @@ jobs:
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      # Install Railway CLI
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      # Deploy using Railway CLI
-      - name: Deploy via Railway CLI
+      - name: Deploy via Railway API
         run: |
-          railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --project "6794a5bd-f6b0-46b2-a199-506694340d97"
-        env:
-          RAILWAY_TOKEN: b1c8cca6-d574-49e6-adc5-891f28aaddbd
-
-      # Debug API Response (Fallback in case CLI fails)
-      - name: Debug API Response
-        if: failure()
-        run: |
+          echo "🚀 Deploying project to Railway..."
           RESPONSE=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer b1c8cca6-d574-49e6-adc5-891f28aaddbd" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
             --data-raw '{
-              "query": "mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"705a3574-eaee-44d8-9dac-187f7524a6ad\") { id } }"
+              "query": "mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"705a3574-eaee-44d8-9dac-187f7524a6ad\", environmentId: \"42d75714-c415-4a9f-ad1c-373141c3eac0\") { id } }"
             }')
 
-          echo "🔍 Full Railway Response:"
-          echo "$RESPONSE" | jq .
+          echo "🔍 Full Railway Response: $RESPONSE"
 
           if echo "$RESPONSE" | grep -q '"errors"'; then
             echo "❌ Deployment failed!"
@@ -60,7 +46,6 @@ jobs:
             echo "✅ Deployment triggered successfully!"
           fi
 
-      # Debug Git Logs on Failure
       - name: Debug Git Logs on Failure
         if: failure()
         run: |
