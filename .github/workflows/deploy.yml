@@ -1,4 +1,4 @@
-name: 🚀 Auto Deploy to Railway
+name: 🚀 Auto Deploy to Railway 
 
 on:
   push:
@@ -28,13 +28,35 @@ jobs:
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      # Step 3: Deploy to Railway using jzeuzs/action-railway
+      # Step 3: Deploy to Railway using Railway GitHub Action
       - name: 🚀 Deploy to Railway
         uses: jzeuzs/action-railway@v1.1.4
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
 
-      # Step 4: Debug Deployment (if Failure Occurs)
+      # Step 4: Deploy via Railway API (with Retry)
+      - name: 🚀 Trigger Deployment via API
+        run: |
+          ATTEMPTS=3
+          for ((i=1; i<=ATTEMPTS; i++)); do
+            echo "🔄 Attempt $i of $ATTEMPTS..."
+            RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+              --data-raw '{"query":"mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\") { id } }"}')
+
+            if [[ "$RESPONSE" == "200" ]]; then
+              echo "✅ Deployment triggered successfully!"
+              exit 0
+            else
+              echo "❌ Deployment failed (HTTP $RESPONSE). Retrying..."
+              sleep 5
+            fi
+          done
+          echo "🚨 Deployment failed after $ATTEMPTS attempts."
+          exit 1
+
+      # Step 5: Debug Deployment (if Failure Occurs)
       - name: 🕵️ Fetch Deployment Logs (if Failed)
         if: failure()
         run: |
@@ -42,4 +64,4 @@ jobs:
           curl -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            --data-raw '{"query":"{ project(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id logs { tail } } }"}'
+            --data-raw '{"query":"{ project(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\") { id logs { tail } } }"}
