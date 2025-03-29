@@ -1,63 +1,13 @@
-name: Deploy to Railway
+# Set the working directory inside the container
+WORKDIR /app
 
-on:
-  push:
-    branches:
-      - main
+# Copy the compiled binary from the builder stage
+COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: write
+# If .env file exists, copy it; otherwise, create it with default values
+COPY .env .env
 
-    steps:
-      # Step 1: Checkout the repository
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      # Step 2: Debug Secrets (check if the Railway token is set)
-      - name: Debug Secrets
-        run: |
-          if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
-            echo "❌ RAILWAY_TOKEN is missing!"
-            exit 1
-          fi
-          echo "✅ RAILWAY_TOKEN is set."
-
-      # Step 3: Build the Docker image
-      - name: Build Docker image
-        run: |
-          echo "Building Docker image..."
-          docker build -t my-docker-image:${{ github.sha }} . || { echo "Docker build failed"; exit 1; }
-          echo "Docker image built successfully!"
-
-      # Step 4: Push Docker image to Docker Hub (or your Docker registry)
-      - name: Push Docker image to Docker Hub
-        run: |
-          echo "Pushing Docker image to Docker Hub..."
-          docker push my-docker-image:${{ github.sha }} || { echo "Docker push failed"; exit 1; }
-          echo "Docker image pushed successfully!"
-
-      # Step 5: Deploy via Railway API using the pre-built Docker image
-      - name: Deploy via Railway API
-        run: |
-          echo "Deploying to Railway using the Docker image..."
-          curl -X POST "https://api.railway.app/graphql/v2" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            --data-raw '{"query":"mutation { deployProject(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id } }"}' || { echo "Deployment to Railway failed"; exit 1; }
-          echo "Deployment initiated successfully!"
-
-      # Step 6: Debug Deployment (if failed)
-      - name: Debug Deployment (if failed)
-        if: failure()
-        run: |
-          echo "🚨 Deployment failed. Fetching logs from Railway..."
-          curl -X POST "https://api.railway.app/graphql/v2" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            --data-raw '{"query":"mutation { project(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id logs { tail } } }"}' || { echo "Failed to fetch Railway logs"; exit 1; }
+# Ensure .env file exists and add default variables if missing
+RUN touch .env && \
+    echo "DATABASE_URL=${DATABASE_URL:-postgres://user:password@host:5432/dbname}" >> .env && \
+    echo "API_KEY=${API_KEY:-your-default-api-key}" >> .env
