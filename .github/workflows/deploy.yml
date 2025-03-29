@@ -1,4 +1,4 @@
-name: 🚀 Auto Deploy to Railway
+name: Deploy to Railway
 
 on:
   push:
@@ -8,51 +8,48 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
       actions: write
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: 🔑 Check Secrets
+      - name: Debug Secrets
         run: |
           if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
-            echo "❌ RAILWAY_TOKEN is missing! Add it in GitHub Secrets."
+            echo "❌ RAILWAY_TOKEN is missing!"
             exit 1
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      - name: 🚀 Deploy to Railway (Debugging Mode)
+      - name: Deploy via Railway API
         run: |
-          echo "🔄 Triggering deployment via Railway API..."
-          RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
+          echo "🚀 Deploying project to Railway..."
+          RESPONSE=$(curl -s -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
             --data-raw '{
               "query": "mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"705a3574-eaee-44d8-9dac-187f7524a6ad\") { id } }"
             }')
 
-          HTTP_CODE=$(tail -n 1 response.json)
-          echo "ℹ️ HTTP Response Code: $HTTP_CODE"
+          echo "🔍 Railway Response: $RESPONSE"
 
-          if [[ "$HTTP_CODE" == "200" ]]; then
-            echo "✅ Deployment triggered successfully!"
-            exit 0
-          else
-            echo "❌ Deployment failed! Response from API:"
-            cat response.json
+          if echo "$RESPONSE" | grep -q '"errors"'; then
+            echo "❌ Deployment failed!"
             exit 1
+          else
+            echo "✅ Deployment triggered successfully!"
           fi
 
-      - name: 🕵️ Fetch Deployment Logs (if Failed)
+      - name: Debug Git Logs on Failure
         if: failure()
         run: |
-          echo "🚨 Deployment failed. Fetching logs..."
-          curl -X POST "https://api.railway.app/graphql/v2" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            --data-raw '{"query":"{ project(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\") { id logs { tail } } }"}'
+          echo "🔍 Debugging Git logs..."
+          git status
+          git log --oneline -n 5
+          git branch -a
