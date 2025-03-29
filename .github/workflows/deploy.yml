@@ -28,37 +28,46 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker --version  # Check if docker is installed
-          docker build -t my-docker-image:${{ github.sha }} .
-          docker images  # List images to check if the build was successful
+          echo "Building Docker image..."
+          docker --version  # Check if Docker is installed
+          docker build -t my-docker-image:${{ github.sha }} . || { echo "Docker build failed"; exit 1; }
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker --version  # Check if docker is installed
-          docker push my-docker-image:${{ github.sha }}
-          
+          echo "Pushing Docker image to Docker Hub..."
+          docker push my-docker-image:${{ github.sha }} || { echo "Docker push failed"; exit 1; }
+
       - name: Install Railway CLI
         run: |
           echo "Installing Railway CLI..."
-          curl -fsSL https://railway.app/install.sh | sh
+          curl -fsSL https://railway.app/install.sh | sh || { echo "Railway CLI installation failed"; exit 1; }
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
           echo "$HOME/.railway/bin" >> $GITHUB_ENV
-          railway --version  # Ensure the CLI is correctly installed
+          railway --version || { echo "Railway CLI version check failed"; exit 1; }
 
       - name: Log into Railway
         run: |
           echo "Logging into Railway..."
-          railway login --token ${{ secrets.RAILWAY_TOKEN }}
+          railway login --token ${{ secrets.RAILWAY_TOKEN }} || { echo "Railway login failed"; exit 1; }
 
       - name: Deploy to Railway using Docker Hub image
         run: |
-          echo "Deploying to Railway..."
-          railway init  # Ensure Railway is initialized
-          railway link  # Ensure the project is linked to Railway
-          railway up --image my-docker-image:${{ github.sha }}
+          echo "Deploying to Railway using Docker image..."
+          railway init || { echo "Railway project initialization failed"; exit 1; }
+          railway link || { echo "Railway project linking failed"; exit 1; }
+          railway up --image my-docker-image:${{ github.sha }} || { echo "Railway deployment failed"; exit 1; }
 
       - name: Debug Deployment (if failed)
         if: failure()
         run: |
           echo "🚨 Deployment failed. Checking logs..."
-          railway logs --tail
+          railway logs --tail || { echo "Failed to fetch Railway logs"; exit 1; }
+
+      - name: Install Dependencies (with detailed debugging)
+        run: |
+          echo "Updating apt sources and installing dependencies..."
+          set -x  # Enable command logging for debugging
+          sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.list
+          apt-get update || { echo "apt-get update failed"; exit 1; }
+          apt-get install -y --no-install-recommends libssl-dev libpq-dev || { echo "apt-get install failed"; exit 1; }
+          rm -rf /var/lib/apt/lists/* || { echo "Failed to clean up apt lists"; exit 1; }
