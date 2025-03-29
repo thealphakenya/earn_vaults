@@ -47,7 +47,7 @@ jobs:
           curl -fsSL https://railway.app/install.sh | sh || { echo "Railway CLI installation failed"; exit 1; }
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
           echo "$HOME/.railway/bin" >> $GITHUB_ENV
-          railway --version  # Ensure the CLI is correctly installed or log error
+          railway --version  # Ensure the CLI is correctly installed
 
       - name: Log into Railway
         run: |
