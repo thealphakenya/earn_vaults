@@ -16,19 +16,17 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Cargo Dependencies
-        uses: Swatinem/rust-cache@v2
-
       - name: Install Railway CLI
         run: |
           curl -fsSL https://railway.app/install.sh | sh
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-
-      - name: Verify Railway CLI Installation
-        run: railway --version
+          export PATH="$HOME/.railway/bin:$PATH"
 
       - name: Deploy to Railway
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_TOKEN: "0c0aa75f-1170-4857-8d05-906e6867a7d1"
         run: |
-          railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0"
+          for i in {1..3}; do
+            railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0" && break
+            echo "Retrying deployment... Attempt $i"
+            sleep 10
+          done
