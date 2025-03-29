@@ -1,48 +1,35 @@
-# Use a multi-stage build to separate the build and runtime environments
+# Stage 1: Build the application (Rust in this example)
+FROM rust:latest as builder
 
-# Stage 1: Build stage
-FROM rust:1.66 as builder
-
-# Set the working directory for the builder stage
+# Set working directory
 WORKDIR /app
 
-# Copy the Cargo.toml and Cargo.lock files
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libssl-dev libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy Cargo.toml and Cargo.lock to the container
 COPY Cargo.toml Cargo.lock ./
 
-# Create the required directories and build dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-RUN rm -f src/main.rs
-
-# Copy the rest of the application source code
-COPY . .
-
-# Build the application
+# Build your project (add your specific build steps here)
 RUN cargo build --release
 
-# Stage 2: Runtime stage
-FROM debian:buster-slim
+# Stage 2: Final Image for running
+FROM debian:bullseye-slim
 
-# Set environment variables (adjust these as needed)
-ENV DATABASE_URL=postgres://user:password@host:5432/dbname
-ENV API_KEY=your-default-api-key
-
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy the compiled binary from the builder stage
-COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
+# Copy compiled binary from the builder image
+COPY --from=builder /app/target/release/your-app-name /usr/local/bin/your-app-name
 
-# If .env file exists, copy it; otherwise, create it with default values
+# Ensure .env file exists (use defaults if not)
 COPY .env .env
+RUN [ -f .env ] || echo "DATABASE_URL=postgres://user:password@host:5432/dbname" > .env
 
-# Ensure .env file exists and add default variables if missing
-RUN touch .env && \
-    echo "DATABASE_URL=${DATABASE_URL:-postgres://user:password@host:5432/dbname}" >> .env && \
-    echo "API_KEY=${API_KEY:-your-default-api-key}" >> .env
-
-# Expose the required port (if applicable)
+# Expose the application port
 EXPOSE 8080
 
-# Command to run the application
-CMD ["earn_vault"]
+# Command to run the app
+CMD ["your-app-name"]
