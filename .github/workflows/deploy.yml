@@ -1,41 +1,69 @@
-# Stage 1: Build the application (Rust in this example)
-FROM rust:latest as builder
+name: 🚀 Auto Deploy to Railway
 
-# Set working directory
-WORKDIR /app
+on:
+  push:
+    branches:
+      - main
 
-# Update apt sources and install dependencies
-RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends libssl-dev libpq-dev && \
-    rm -rf /var/lib/apt/lists/*
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
 
-# Copy Cargo.toml and Cargo.lock to the container
-COPY Cargo.toml Cargo.lock ./
+    steps:
+      # Step 1: Checkout the repository
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-# Build your project (replace with your build steps, for example)
-RUN cargo build --release
+      # Step 2: Ensure Secrets Exist
+      - name: 🔑 Debug Secrets
+        run: |
+          if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
+            echo "❌ RAILWAY_TOKEN is missing!"
+            exit 1
+          fi
+          echo "✅ RAILWAY_TOKEN is set."
 
-# Stage 2: Final Image for running the application
-FROM debian:bullseye-slim
+      # Step 3: Install Railway CLI (For Debugging)
+      - name: 🛠 Install Railway CLI
+        run: |
+          echo "Installing Railway CLI..."
+          curl -fsSL https://railway.app/install.sh | sh || echo "⚠️ CLI installation skipped"
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
+          railway --version || echo "⚠️ Railway CLI not found"
 
-# Set working directory
-WORKDIR /app
+      # Step 4: Deploy via Railway API with Automatic Retries
+      - name: 🚀 Deploy via Railway API (with Retry)
+        run: |
+          ATTEMPTS=3
+          for ((i=1; i<=ATTEMPTS; i++)); do
+            echo "🔄 Attempt $i of $ATTEMPTS..."
+            RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+              --data-raw '{"query":"mutation { deployProject(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id } }"}')
 
-# Install any necessary dependencies in the final image
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libssl1.1 libpq5 && \
-    rm -rf /var/lib/apt/lists/*
+            if [[ "$RESPONSE" == "200" ]]; then
+              echo "✅ Deployment triggered successfully!"
+              exit 0
+            else
+              echo "❌ Deployment failed (HTTP $RESPONSE). Retrying..."
+              sleep 5
+            fi
+          done
+          echo "🚨 Deployment failed after $ATTEMPTS attempts."
+          exit 1
 
-# Copy compiled binary from the builder image
-COPY --from=builder /app/target/release/your-app-name /usr/local/bin/your-app-name
-
-# Ensure .env file exists (use defaults if not)
-COPY .env .env
-RUN [ -f .env ] || echo "DATABASE_URL=postgres://user:password@host:5432/dbname" > .env
-
-# Expose the application port (change this according to your app's needs)
-EXPOSE 8080
-
-# Command to run the app (replace with the command you need to start your app)
-CMD ["your-app-name"]
+      # Step 5: Debug Deployment Logs (if failure occurs)
+      - name: 🕵️ Debug Deployment (if failed)
+        if: failure()
+        run: |
+          echo "🚨 Deployment failed. Fetching logs..."
+          curl -X POST "https://api.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            --data-raw '{"query":"{ project(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id logs { tail } } }"}'
