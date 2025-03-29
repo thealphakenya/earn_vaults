@@ -13,13 +13,11 @@ jobs:
       actions: write
 
     steps:
-      # Step 1: Checkout Repository
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1  # Fetch only the latest commit for efficiency
+          fetch-depth: 1
 
-      # Step 2: Debug Secrets (Ensure Required Secrets Exist)
       - name: 🔑 Check Secrets
         run: |
           if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
@@ -28,13 +26,18 @@ jobs:
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      # Step 3: Trigger Deployment via Railway API
-      - name: 🚀 Trigger Deployment via Railway API
+      - name: 🚀 Deploy to Railway (Explicit Service Selection)
         run: |
+          QUERY='mutation ($projectId: String!, $serviceId: String!) { 
+            deployProject(id: $projectId, service: $serviceId) { id } 
+          }'
+
+          VARIABLES=$(jq -n --arg projectId "6794a5bd-f6b0-46b2-a199-506694340d97" --arg serviceId "705a3574-eaee-44d8-9dac-187f7524a6ad" '{ projectId: $projectId, serviceId: $serviceId }')
+
           RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://backboard.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            --data-raw '{"query":"mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"splendid-commitment\") { id } }"}')
+            --data-raw "$(jq -n --arg query "$QUERY" --argjson variables "$VARIABLES" '{ query: $query, variables: $variables }')")
 
           if [[ "$RESPONSE" == "200" ]]; then
             echo "✅ Deployment triggered successfully!"
@@ -45,7 +48,6 @@ jobs:
             exit 1
           fi
 
-      # Step 4: Fetch Deployment Logs (if Failure Occurs)
       - name: 🕵️ Fetch Deployment Logs (if Failed)
         if: failure()
         run: |
