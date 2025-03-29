@@ -5,7 +5,7 @@ FROM rust:slim AS builder
 WORKDIR /app
 
 # Install required dependencies for building
-RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev
+RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev libpq-dev
 
 # Copy Cargo files and fetch dependencies
 COPY Cargo.toml Cargo.lock ./ 
@@ -14,7 +14,7 @@ RUN cargo fetch
 
 # Copy source code and build the project
 COPY . . 
-RUN cargo build --release
+RUN cargo build --release --verbose  # Added verbose for debugging
 
 # Use a smaller, more stable Debian version for deployment
 FROM debian:bullseye-slim
