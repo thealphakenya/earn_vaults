@@ -26,8 +26,9 @@ jobs:
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      - name: 🚀 Deploy to Railway (Explicit Service Selection)
+      - name: 🚀 Deploy to Railway (Debugging Mode)
         run: |
+          echo "🔄 Triggering deployment via Railway API..."
           RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
@@ -35,11 +36,14 @@ jobs:
               "query": "mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"705a3574-eaee-44d8-9dac-187f7524a6ad\") { id } }"
             }')
 
-          if [[ "$RESPONSE" == "200" ]]; then
+          HTTP_CODE=$(tail -n 1 response.json)
+          echo "ℹ️ HTTP Response Code: $HTTP_CODE"
+
+          if [[ "$HTTP_CODE" == "200" ]]; then
             echo "✅ Deployment triggered successfully!"
             exit 0
           else
-            echo "❌ Deployment failed (HTTP $RESPONSE). Debugging..."
+            echo "❌ Deployment failed! Response from API:"
             cat response.json
             exit 1
           fi
