@@ -4,22 +4,28 @@ FROM rust:latest as builder
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
-RUN apt-get update && \
+# Update apt sources and install dependencies
+RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.list && \
+    apt-get update && \
     apt-get install -y --no-install-recommends libssl-dev libpq-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy Cargo.toml and Cargo.lock to the container
 COPY Cargo.toml Cargo.lock ./
 
-# Build your project (add your specific build steps here)
+# Build your project (replace with your build steps, for example)
 RUN cargo build --release
 
-# Stage 2: Final Image for running
+# Stage 2: Final Image for running the application
 FROM debian:bullseye-slim
 
 # Set working directory
 WORKDIR /app
+
+# Install any necessary dependencies in the final image
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libssl1.1 libpq5 && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy compiled binary from the builder image
 COPY --from=builder /app/target/release/your-app-name /usr/local/bin/your-app-name
@@ -28,8 +34,8 @@ COPY --from=builder /app/target/release/your-app-name /usr/local/bin/your-app-na
 COPY .env .env
 RUN [ -f .env ] || echo "DATABASE_URL=postgres://user:password@host:5432/dbname" > .env
 
-# Expose the application port
+# Expose the application port (change this according to your app's needs)
 EXPOSE 8080
 
-# Command to run the app
+# Command to run the app (replace with the command you need to start your app)
 CMD ["your-app-name"]
