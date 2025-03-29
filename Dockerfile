@@ -7,8 +7,11 @@ WORKDIR /app
 # Install required dependencies for building
 RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev libpq-dev
 
-# Copy Cargo files and fetch dependencies
-COPY Cargo.toml Cargo.lock ./ 
+# Ensure Cargo.lock exists (if missing, create it)
+COPY Cargo.toml Cargo.lock ./
+RUN test -f Cargo.lock || cargo generate-lockfile
+
+# Fetch dependencies (caching step)
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo fetch
 
@@ -16,10 +19,13 @@ RUN cargo fetch
 COPY . . 
 RUN cargo build --release --verbose  # Added verbose for debugging
 
-# Use a smaller, more stable Debian version for deployment
+# Reduce binary size
+RUN strip target/release/earn_vault
+
+# Use a minimal Debian image for deployment
 FROM debian:bullseye-slim
 
-# Fix network issues, optimize APT mirrors, and install required runtime dependencies
+# Optimize APT mirrors and install runtime dependencies
 RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends libssl-dev libpq-dev && \
@@ -31,7 +37,7 @@ WORKDIR /app
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
 
-# Expose the fixed port
+# Expose the service port
 EXPOSE 8080
 
 # Set the entrypoint
