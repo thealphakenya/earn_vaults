@@ -26,11 +26,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t my-docker-image:latest .
+          docker build -t my-docker-image:${{ github.sha }} .
         
       - name: Push Docker image to Docker Hub
         run: |
-          docker push my-docker-image:latest
+          docker push my-docker-image:${{ github.sha }}
 
       - name: Install Railway CLI
         run: |
@@ -45,7 +45,7 @@ jobs:
         run: |
           railway init
           railway link
-          railway up --image my-docker-image:latest
+          railway up --image my-docker-image:${{ github.sha }}
 
       - name: Debug Deployment (if failed)
         if: failure()
