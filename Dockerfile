@@ -31,11 +31,18 @@ WORKDIR /app
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
 
+<<<<<<< HEAD
 # If .env file exists, copy it; otherwise, create it with default values
 COPY .env .env || true
 RUN [ -f .env ] || echo "DATABASE_URL=postgres://user:password@host:5432/dbname" > .env
 
+=======
+>>>>>>> 0785916dcb9174a0b3c35975d1d66fcc5fa56dc3
 # Ensure .env file exists and add default variables if missing
+# If .env is present, copy it; otherwise, create it with default values
+COPY .env .env || echo "DATABASE_URL=postgres://user:password@host:5432/dbname" > .env
+
+# Alternatively, ensure that the .env file is created with default values
 RUN touch .env && \
     echo "DATABASE_URL=${DATABASE_URL:-postgres://user:password@host:5432/dbname}" >> .env && \
     echo "API_KEY=${API_KEY:-your-default-api-key}" >> .env && \
