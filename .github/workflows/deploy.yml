@@ -28,46 +28,13 @@ jobs:
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      # Step 3: Install Railway CLI (with Error Handling)
-      - name: 🛠 Install Railway CLI
-        run: |
-          echo "Installing Railway CLI..."
-          curl -fsSL https://railway.app/install.sh | sh || {
-            echo "❌ Failed to install Railway CLI. Exiting..."
-            exit 1
-          }
-          echo "$HOME/.railway/bin" >> $GITHUB_PATH
-          railway --version || echo "⚠️ Railway CLI installation issue"
+      # Step 3: Deploy to Railway using jzeuzs/action-railway
+      - name: 🚀 Deploy to Railway
+        uses: jzeuzs/action-railway@v1.1.4
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
 
-      # Step 4: Authenticate with Railway (Fixed)
-      - name: 🔑 Authenticate Railway CLI
-        run: |
-          echo "${{ secrets.RAILWAY_TOKEN }}" | railway auth login
-          echo "✅ Authenticated with Railway"
-
-      # Step 5: Deploy to Railway (with Auto-Retry)
-      - name: 🚀 Deploy via Railway API (with Retry)
-        run: |
-          ATTEMPTS=3
-          for ((i=1; i<=ATTEMPTS; i++)); do
-            echo "🔄 Attempt $i of $ATTEMPTS..."
-            RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-              --data-raw '{"query":"mutation { deployProject(id: \"f048f3ca-1331-4931-bc33-063e0894822c\") { id } }"}')
-
-            if [[ "$RESPONSE" == "200" ]]; then
-              echo "✅ Deployment triggered successfully!"
-              exit 0
-            else
-              echo "❌ Deployment failed (HTTP $RESPONSE). Retrying..."
-              sleep 5
-            fi
-          done
-          echo "🚨 Deployment failed after $ATTEMPTS attempts."
-          exit 1
-
-      # Step 6: Debug Deployment (if Failure Occurs)
+      # Step 4: Debug Deployment (if Failure Occurs)
       - name: 🕵️ Fetch Deployment Logs (if Failed)
         if: failure()
         run: |
