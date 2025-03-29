@@ -33,7 +33,7 @@ jobs:
         uses: jzeuzs/action-railway@v1.1.4
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          args: "--service splendid-commitment"  # Service name specified
+          args: deploy --service splendid-commitment  # Explicitly specify service name
 
       # Step 4: Deploy via Railway API (with Retry)
       - name: 🚀 Trigger Deployment via API
