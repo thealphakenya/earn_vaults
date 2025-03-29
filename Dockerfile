@@ -1,11 +1,11 @@
-# Use an official Rust image as the builder
-FROM rust:latest AS builder
+# Use a slim Rust image to reduce memory usage during the build process
+FROM rust:slim AS builder
 
 # Set working directory
 WORKDIR /app
 
 # Install required dependencies for building
-RUN apt-get update && apt-get install -y pkg-config libssl-dev
+RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev
 
 # Copy Cargo files and fetch dependencies
 COPY Cargo.toml Cargo.lock ./
@@ -31,10 +31,11 @@ WORKDIR /app
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/target/release/earn_vault /usr/local/bin/earn_vault
 
-# Copy the existing .env file if present
-COPY .env .env
-
 # Ensure .env file exists and add default variables if missing
+# If .env is present, copy it; otherwise, create it with default values
+COPY .env .env || echo "DATABASE_URL=postgres://user:password@host:5432/dbname" > .env
+
+# Alternatively, ensure that the .env file is created with default values
 RUN touch .env && \
     echo "DATABASE_URL=${DATABASE_URL:-postgres://user:password@host:5432/dbname}" >> .env && \
     echo "API_KEY=${API_KEY:-your-default-api-key}" >> .env && \
