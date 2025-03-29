@@ -7,17 +7,18 @@ WORKDIR /app
 # Install required dependencies for building
 RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev libpq-dev
 
-# Ensure Cargo.lock exists (if missing, create it)
-COPY Cargo.toml Cargo.lock ./
-RUN test -f Cargo.lock || cargo generate-lockfile
+# Ensure Cargo files exist before copying
+COPY Cargo.toml .  
+RUN [ -f Cargo.lock ] || touch Cargo.lock  
+COPY Cargo.lock .  
 
 # Fetch dependencies (caching step)
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo fetch
 
 # Copy source code and build the project
-COPY . . 
-RUN cargo build --release --verbose  # Added verbose for debugging
+COPY . .  
+RUN cargo build --release --verbose  
 
 # Reduce binary size
 RUN strip target/release/earn_vault
