@@ -13,7 +13,7 @@ jobs:
       actions: write
 
     steps:
-      # Step 1: Checkout the Repository
+      # Step 1: Checkout Repository
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -22,7 +22,6 @@ jobs:
       # Step 2: Debug Secrets (Ensure Required Secrets Exist)
       - name: 🔑 Check Secrets
         run: |
-          echo "Checking secrets..."
           if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
             echo "❌ RAILWAY_TOKEN is missing! Add it in GitHub Secrets."
             exit 1
@@ -40,10 +39,10 @@ jobs:
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
           railway --version || echo "⚠️ Railway CLI installation issue"
 
-      # Step 4: Authenticate with Railway
+      # Step 4: Authenticate with Railway (Fixed)
       - name: 🔑 Authenticate Railway CLI
         run: |
-          railway login --token "${{ secrets.RAILWAY_TOKEN }}"
+          echo "${{ secrets.RAILWAY_TOKEN }}" | railway auth login
           echo "✅ Authenticated with Railway"
 
       # Step 5: Deploy to Railway (with Auto-Retry)
