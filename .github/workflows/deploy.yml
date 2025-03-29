@@ -13,13 +13,11 @@ jobs:
       actions: write
 
     steps:
-      # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      # Debugging: Check if the Railway token is set
       - name: Debug Secrets
         run: |
           if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
@@ -28,38 +26,37 @@ jobs:
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      # Build the Docker image
       - name: Build Docker image
         run: |
+          docker --version  # Check if docker is installed
           docker build -t my-docker-image:${{ github.sha }} .
+          docker images  # List images to check if the build was successful
 
-      # Push Docker image to Docker Hub
       - name: Push Docker image to Docker Hub
         run: |
+          docker --version  # Check if docker is installed
           docker push my-docker-image:${{ github.sha }}
-
-      # Install Railway CLI
+          
       - name: Install Railway CLI
         run: |
+          echo "Installing Railway CLI..."
           curl -fsSL https://railway.app/install.sh | sh
           echo "$HOME/.railway/bin" >> $GITHUB_PATH
           echo "$HOME/.railway/bin" >> $GITHUB_ENV
+          railway --version  # Ensure the CLI is correctly installed
 
-      # Log into Railway using the provided token
       - name: Log into Railway
         run: |
+          echo "Logging into Railway..."
           railway login --token ${{ secrets.RAILWAY_TOKEN }}
 
-      # Deploy the project to Railway using the Docker image from Docker Hub
       - name: Deploy to Railway using Docker Hub image
         run: |
-          # Initialize Railway project (if not already initialized)
-          railway init
-          railway link
-          # Deploy using the image hosted on Docker Hub
+          echo "Deploying to Railway..."
+          railway init  # Ensure Railway is initialized
+          railway link  # Ensure the project is linked to Railway
           railway up --image my-docker-image:${{ github.sha }}
 
-      # Debug Deployment if it fails
       - name: Debug Deployment (if failed)
         if: failure()
         run: |
