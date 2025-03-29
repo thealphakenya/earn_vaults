@@ -8,11 +8,54 @@ steps:
   # Step 1: Checkout Repository
   - name: "📥 Checkout Repository"
     uses: actions/checkout@v4
+    with:
+      fetch-depth: 1  # Fetch only the latest commit for efficiency
 
-  # Step 2: Deploy using Railway Action
+  # Step 2: Debug Secrets (Ensure Required Secrets Exist)
+  - name: "🔑 Check Secrets"
+    run: |
+      if [[ -z "${{ secrets.RAILWAY_TOKEN }}" ]]; then
+        echo "❌ RAILWAY_TOKEN is missing! Add it in GitHub Secrets."
+        exit 1
+      fi
+      echo "✅ RAILWAY_TOKEN is set."
+
+  # Step 3: Deploy to Railway using Railway GitHub Action
   - name: "🚀 Deploy to Railway"
     uses: jzeuzs/action-railway@v1.1.4
     with:
       railway_token: ${{ secrets.RAILWAY_TOKEN }}
-      args: up --service splendid-commitment
+      args: "--service splendid-commitment"  # Service name specified
+
+  # Step 4: Deploy via Railway API (with Retry)
+  - name: "🚀 Trigger Deployment via API"
+    run: |
+      ATTEMPTS=3
+      for ((i=1; i<=ATTEMPTS; i++)); do
+        echo "🔄 Attempt $i of $ATTEMPTS..."
+        RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+          --data-raw '{"query":"mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"splendid-commitment\") { id } }"}')
+
+        if [[ "$RESPONSE" == "200" ]]; then
+          echo "✅ Deployment triggered successfully!"
+          exit 0
+        else
+          echo "❌ Deployment failed (HTTP $RESPONSE). Retrying..."
+          sleep 5
+        fi
+      done
+      echo "🚨 Deployment failed after $ATTEMPTS attempts."
+      exit 1
+
+  # Step 5: Debug Deployment (if Failure Occurs)
+  - name: "🕵️ Fetch Deployment Logs (if Failed)"
+    if: failure()
+    run: |
+      echo "🚨 Deployment failed. Fetching logs..."
+      curl -X POST "https://api.railway.app/graphql/v2" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+        --data-raw '{"query":"{ project(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\") { id logs { tail } } }"}'
 
