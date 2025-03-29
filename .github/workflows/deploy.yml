@@ -17,12 +17,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: npm install -g railway
-      
+      - name: Install Latest Railway CLI
+        run: npm install -g @railway/cli
+
       - name: Login to Railway
-        run: |
-          echo "${{ secrets.RAILWAY_TOKEN }}" | railway login --token
+        run: railway login --token "${{ secrets.RAILWAY_TOKEN }}"
 
       - name: Deploy to Railway
         run: railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0"
