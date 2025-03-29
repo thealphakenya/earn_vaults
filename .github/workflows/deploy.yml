@@ -1,3 +1,32 @@
+# Use a multi-stage build to separate the build and runtime environments
+
+# Stage 1: Build stage
+FROM rust:1.66 as builder
+
+# Set the working directory for the builder stage
+WORKDIR /app
+
+# Copy the Cargo.toml and Cargo.lock files
+COPY Cargo.toml Cargo.lock ./
+
+# Create the required directories and build dependencies
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build --release
+RUN rm -f src/main.rs
+
+# Copy the rest of the application source code
+COPY . .
+
+# Build the application
+RUN cargo build --release
+
+# Stage 2: Runtime stage
+FROM debian:buster-slim
+
+# Set environment variables (adjust these as needed)
+ENV DATABASE_URL=postgres://user:password@host:5432/dbname
+ENV API_KEY=your-default-api-key
+
 # Set the working directory inside the container
 WORKDIR /app
 
@@ -11,3 +40,9 @@ COPY .env .env
 RUN touch .env && \
     echo "DATABASE_URL=${DATABASE_URL:-postgres://user:password@host:5432/dbname}" >> .env && \
     echo "API_KEY=${API_KEY:-your-default-api-key}" >> .env
+
+# Expose the required port (if applicable)
+EXPOSE 8080
+
+# Command to run the application
+CMD ["earn_vault"]
