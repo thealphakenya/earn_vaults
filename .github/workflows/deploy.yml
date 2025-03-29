@@ -28,41 +28,29 @@ jobs:
           fi
           echo "✅ RAILWAY_TOKEN is set."
 
-      # Step 3: Deploy to Railway using Railway GitHub Action
-      - name: 🚀 Deploy to Railway
-        uses: jzeuzs/action-railway@v1.1.4
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          args: deploy --service splendid-commitment  # Explicitly specify service name
-
-      # Step 4: Deploy via Railway API (with Retry)
-      - name: 🚀 Trigger Deployment via API
+      # Step 3: Trigger Deployment via Railway API
+      - name: 🚀 Trigger Deployment via Railway API
         run: |
-          ATTEMPTS=3
-          for ((i=1; i<=ATTEMPTS; i++)); do
-            echo "🔄 Attempt $i of $ATTEMPTS..."
-            RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.railway.app/graphql/v2" \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-              --data-raw '{"query":"mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"splendid-commitment\") { id } }"}')
+          RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST "https://backboard.railway.app/graphql/v2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            --data-raw '{"query":"mutation { deployProject(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\", service: \"splendid-commitment\") { id } }"}')
 
-            if [[ "$RESPONSE" == "200" ]]; then
-              echo "✅ Deployment triggered successfully!"
-              exit 0
-            else
-              echo "❌ Deployment failed (HTTP $RESPONSE). Retrying..."
-              sleep 5
-            fi
-          done
-          echo "🚨 Deployment failed after $ATTEMPTS attempts."
-          exit 1
+          if [[ "$RESPONSE" == "200" ]]; then
+            echo "✅ Deployment triggered successfully!"
+            exit 0
+          else
+            echo "❌ Deployment failed (HTTP $RESPONSE). Debugging..."
+            cat response.json
+            exit 1
+          fi
 
-      # Step 5: Debug Deployment (if Failure Occurs)
+      # Step 4: Fetch Deployment Logs (if Failure Occurs)
       - name: 🕵️ Fetch Deployment Logs (if Failed)
         if: failure()
         run: |
           echo "🚨 Deployment failed. Fetching logs..."
-          curl -X POST "https://api.railway.app/graphql/v2" \
+          curl -X POST "https://backboard.railway.app/graphql/v2" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
             --data-raw '{"query":"{ project(id: \"6794a5bd-f6b0-46b2-a199-506694340d97\") { id logs { tail } } }"}'
