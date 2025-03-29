@@ -11,12 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     sudo
 
-# Install Railway CLI on the fly
-RUN curl -fsSL https://railway.app/install.sh | sh \
-    && echo "$HOME/.railway/bin" >> $GITHUB_PATH \
-    && echo "$HOME/.railway/bin" >> $GITHUB_ENV
+# Install Railway CLI via Cargo
+RUN cargo install railwayapp --locked
 
-# Check if Railway CLI is installed (for debugging purposes)
+# Verify Railway CLI installation
 RUN railway --version
 
 # Copy Cargo files and fetch dependencies
@@ -41,12 +39,13 @@ RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.
     sudo && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Railway CLI in the final stage to ensure it's available in the runtime container
-RUN curl -fsSL https://railway.app/install.sh | sh \
-    && echo "$HOME/.railway/bin" >> $GITHUB_PATH \
-    && echo "$HOME/.railway/bin" >> $GITHUB_ENV
+# Install Railway CLI via Cargo in the final stage
+RUN apt-get update && apt-get install -y curl sudo && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    source $HOME/.cargo/env && \
+    cargo install railwayapp --locked
 
-# Check if Railway CLI is installed in the final stage (for debugging purposes)
+# Verify Railway CLI installation in the final stage
 RUN railway --version
 
 # Set working directory in the runtime container
