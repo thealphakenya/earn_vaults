@@ -46,7 +46,7 @@ jobs:
 
       - name: Deploy to Railway using Docker Hub image
         run: |
-          # Initialize Railway project (if not already initialized)
+          # Initialize Railway project
           railway init
           railway link
           # Deploy using the image hosted on Docker Hub (replace with your actual Docker image name)
