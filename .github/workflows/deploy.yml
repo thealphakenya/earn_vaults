@@ -1,5 +1,3 @@
-name: Deploy to Railway
-
 on:
   push:
     branches:
@@ -24,11 +22,7 @@ jobs:
         run: |
           echo "$RAILWAY_TOKEN" | railway login --token
 
-      - name: Link Railway Project
-        run: |
-          railway link --service "705a3574-eaee-44d8-9dac-187f7524a6ad"
-
-      - name: Set Up Environment Variables
+      - name: Set Up Environment Variables (Optional)
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "API_KEY=${{ secrets.API_KEY }}" >> .env
