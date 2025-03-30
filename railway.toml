@@ -1,6 +1,10 @@
-[service]
-name = "earn_vaults"
+[service]  
+name = "earn_vaults"  
 
-[env]
-DATABASE_URL = "sqlite://earn_vault.db"  # Update with actual database URL
-RAILWAY_TOKEN = "0c0aa75f-1170-4857-8d05-906e6867a7d1" # Replace with actual token
+[env]  
+DATABASE_URL = "${DATABASE_URL}"  # Load from environment variables  
+RAILWAY_TOKEN = "${RAILWAY_TOKEN}"  # Load from environment variables  
+API_KEY = "${API_KEY}"  # Load from environment variables  
+
+RAILWAY_ENVIRONMENT = "production"  # Environment Type  
+BACKUP_DIR = "./backups"  # Database Backup Directory

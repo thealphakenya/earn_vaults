@@ -11,13 +11,20 @@ secrets/
 
 # Ignore SQLite database files
 *.sqlite
+*.db  # General database files
 
 # Ignore log files
 *.log
+logs/
 
 # Ignore Python virtual environment directories
 pytorch_env/
 cpython/
+venv/
+__pycache__/
 
 # Ignore Miniconda installer
 Miniconda3-latest-Linux-x86_64.sh
+
+# Ignore Railway deployment files
+.railway/
