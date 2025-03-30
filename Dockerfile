@@ -1,4 +1,4 @@
-# Use a slim Rust image to reduce memory usage during the build process
+# Use a slim Rust image with a reliable mirror
 FROM rust:slim AS builder
 
 # Set working directory
@@ -26,10 +26,8 @@ RUN strip target/release/earn_vault
 # Use a minimal Debian image for deployment
 FROM debian:bullseye-slim
 
-# Optimize APT mirrors and install runtime dependencies using a Docker mirror
-RUN mkdir -p /etc/docker && \
-    echo '{ "registry-mirrors": ["https://mirror.gcr.io"] }' > /etc/docker/daemon.json && \
-    sed -i 's|http://deb.debian.org|http://mirror.gcr.io/debian-security|' /etc/apt/sources.list && \
+# Use a reliable mirror for APT sources
+RUN sed -i 's|http://deb.debian.org|http://mirror.gcr.io/debian-security|' /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends libssl-dev libpq-dev && \
     rm -rf /var/lib/apt/lists/*
