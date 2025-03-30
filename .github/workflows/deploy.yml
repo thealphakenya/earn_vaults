@@ -17,23 +17,25 @@ jobs:
         run: |
           curl -fsSL https://railway.app/install.sh | sh || npm install -g @railway/cli
           export PATH="$HOME/.railway/bin:$PATH"
-          railway --version || echo "Railway CLI installation failed!"
 
-      - name: Set Up Environment Variables
+      - name: Authenticate with Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
-          cat <<EOF > .env
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          API_KEY=${{ secrets.API_KEY }}
-          PORT=${{ secrets.PORT }}
-          RAILWAY_ENVIRONMENT=${{ secrets.RAILWAY_ENVIRONMENT }}
-          BACKUP_DIR=${{ secrets.BACKUP_DIR }}
-          EOF
-        shell: bash
+          echo "$RAILWAY_TOKEN" | railway login --token
 
       - name: Link Railway Project
         run: |
           railway link --service "705a3574-eaee-44d8-9dac-187f7524a6ad"
-          railway status
+
+      - name: Set Up Environment Variables
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
+          echo "RAILWAY_ENVIRONMENT=${{ secrets.RAILWAY_ENVIRONMENT }}" >> .env
+          echo "BACKUP_DIR=${{ secrets.BACKUP_DIR }}" >> .env
+        shell: bash
 
       - name: Deploy to Railway (with retry)
         env:
@@ -44,4 +46,3 @@ jobs:
             echo "Deployment failed, retrying in 10 seconds ($i/3)..."
             sleep 10
           done
-          railway logs --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --tail
