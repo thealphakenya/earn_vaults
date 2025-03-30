@@ -31,4 +31,4 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
-          railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0"
+          railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0
