@@ -13,10 +13,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Configure Docker to use a different mirror
+      - name: Configure Docker to use a reliable mirror
         run: |
           sudo mkdir -p /etc/docker
-          echo '{ "registry-mirrors": ["https://mirror.gcr.io"] }' | sudo tee /etc/docker/daemon.json
+          echo '{ "registry-mirrors": ["https://mirror.gcr.io", "https://hub-mirror.c.163.com", "https://docker.mirrors.ustc.edu.cn"] }' | sudo tee /etc/docker/daemon.json
           sudo systemctl restart docker
 
       - name: Set up Rust
@@ -27,8 +27,12 @@ jobs:
           curl -fsSL https://railway.app/install.sh | sh || npm install -g @railway/cli
           export PATH="$HOME/.railway/bin:$PATH"
 
-      - name: Deploy to Railway
+      - name: Deploy to Railway (with retry)
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
-          railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0"
+          for i in {1..3}; do
+            railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "42d75714-c415-4a9f-ad1c-373141c3eac0" && break
+            echo "Deployment failed, retrying in 10 seconds ($i/3)..."
+            sleep 10
+          done
