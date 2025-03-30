@@ -26,8 +26,10 @@ RUN strip target/release/earn_vault
 # Use a minimal Debian image for deployment
 FROM debian:bullseye-slim
 
-# Optimize APT mirrors and install runtime dependencies
-RUN sed -i 's|http://deb.debian.org|http://ftp.us.debian.org|' /etc/apt/sources.list && \
+# Optimize APT mirrors and install runtime dependencies using a Docker mirror
+RUN mkdir -p /etc/docker && \
+    echo '{ "registry-mirrors": ["https://mirror.gcr.io"] }' > /etc/docker/daemon.json && \
+    sed -i 's|http://deb.debian.org|http://mirror.gcr.io/debian-security|' /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends libssl-dev libpq-dev && \
     rm -rf /var/lib/apt/lists/*
