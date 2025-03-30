@@ -2,16 +2,17 @@
 target/
 *.rs.bk
 
-# Ignore Cargo lock file
-Cargo.lock
+# Optionally ignore Cargo lock file (if you prefer not to commit it)
+# Cargo.lock
 
 # Ignore environment files and secrets
 .env
 secrets/
+railway.toml
 
 # Ignore SQLite database files
 *.sqlite
-*.db  # General database files
+*.db
 
 # Ignore log files
 *.log
@@ -26,5 +27,5 @@ __pycache__/
 # Ignore Miniconda installer
 Miniconda3-latest-Linux-x86_64.sh
 
-# Ignore Railway deployment files
+# Ignore Railway local configuration (if any)
 .railway/

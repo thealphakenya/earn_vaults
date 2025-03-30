@@ -22,14 +22,14 @@ chrono = { version = "0.4", features = ["serde"] }
 
 # AI Dependencies
 rust-bert = "0.21.0"  # Pretrained NLP models for AI features
-tch = "0.13.0"  # Updated to match rust-bert dependencies
-openai = "1.0"  # OpenAI API for chat and automation
+tch = "0.13.0"       # Updated to match rust-bert dependencies
+openai = "1.0"       # OpenAI API for chat and automation
 
 # Authentication
-jsonwebtoken = "9"  # JWT support
+jsonwebtoken = "9"   # JWT support
 
 # Environment variables
-dotenvy = "0.15"  # For loading .env files
+dotenvy = "0.15"     # For loading .env files
 
 # Logging
 log = "0.4"
@@ -40,3 +40,6 @@ async-trait = "0.1"
 
 # Filesystem utilities
 fs_extra = "1.3"
+
+# HTTP client (for webhook and secret fetching)
+reqwest = { version = "0.11", features = ["json"] }
