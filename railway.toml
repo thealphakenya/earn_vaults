@@ -2,5 +2,5 @@
 name = "earn_vaults"
 
 [env]
-DATABASE_URL = "your-database-url"
-RAILWAY_TOKEN = "your-railway-api-token"
+DATABASE_URL = "sqlite://earn_vault.db"  # Update with actual database URL
+RAILWAY_TOKEN = "0c0aa75f-1170-4857-8d05-906e6867a7d1" # Replace with actual token

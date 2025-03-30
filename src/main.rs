@@ -7,6 +7,7 @@ use chrono::Utc;
 use std::path::Path;
 use rusqlite::Connection;
 use std::env;
+use dotenvy::dotenv;
 
 mod auth;
 mod tasks;
@@ -27,35 +28,40 @@ async fn authenticate(req: HttpRequest) -> bool {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Load environment variables
+    dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let api_key = env::var("API_KEY").unwrap_or_else(|_| "default-api-key".to_string());
 
     println!("Connected to database at {}", database_url);
     println!("Using API key: {}", api_key);
 
+    // Initialize database
     let db_conn = db::init_database().expect("Failed to initialize DB");
+    let db_conn = Arc::new(Mutex::new(db_conn)); // Wrap connection in Arc<Mutex<>>
+
     let ai_manager = Arc::new(TokioMutex::new(ai::AIManager::new(&api_key)));
     let withdrawals_enabled = Arc::new(Mutex::new(true)); // Withdrawals enabled by default
 
     // Start backup system in the background
-    let db_clone = db_conn.clone();
+    let db_clone = Arc::clone(&db_conn);
     tokio::spawn(async move {
         let mut backup_timer = interval(Duration::from_secs(3600)); // Run every 1 hour
         loop {
             backup_timer.tick().await;
-            backup_database(&db_clone);
+            let db_guard = db_clone.lock().unwrap();
+            backup_database(&db_guard);
         }
     });
 
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(db_conn.clone()))
+            .app_data(web::Data::new(Arc::clone(&db_conn)))
             .app_data(web::Data::new(ai_manager.clone()))
             .app_data(web::Data::new(withdrawals_enabled.clone()))
-            .configure(|cfg| auth::config(cfg, db_conn.clone()))
-            .configure(|cfg| tasks::config(cfg, db_conn.clone()))
+            .configure(|cfg| auth::config(cfg, Arc::clone(&db_conn)))
+            .configure(|cfg| tasks::config(cfg, Arc::clone(&db_conn)))
             .configure(|cfg| ai::config(cfg, ai_manager.clone()))
-            .configure(|cfg| admin::config(cfg, db_conn.clone()))
+            .configure(|cfg| admin::config(cfg, Arc::clone(&db_conn)))
             .route("/", web::get().to(home))
             .route("/diagnose", web::post().to(diagnose_issue))
             .route("/auto-fix", web::post().to(auto_fix_issue))
