@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["openssl", "postgresql", "pkg-config", "libssl-dev", "libpq-dev"]
+
+[phases.build]
+cmds = ["cargo build --release"]
+
+[phases.start]
+cmds = ["./target/release/earn_vault"]

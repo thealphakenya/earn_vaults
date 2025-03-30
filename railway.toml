@@ -1,0 +1,6 @@
+[service]
+name = "earn_vaults"
+
+[env]
+DATABASE_URL = "your-database-url"
+RAILWAY_TOKEN = "your-railway-api-token"
