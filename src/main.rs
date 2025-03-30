@@ -25,6 +25,12 @@ async fn authenticate(req: HttpRequest) -> bool {
     false
 }
 
+// Webhook handler
+async fn webhook_handler(body: String) -> impl Responder {
+    println!("Received Webhook: {}", body);
+    HttpResponse::Ok().body("Webhook received")
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Load environment variables
@@ -37,10 +43,10 @@ async fn main() -> std::io::Result<()> {
 
     // Initialize database
     let db_conn = db::init_database().expect("Failed to initialize DB");
-    let db_conn = Arc::new(Mutex::new(db_conn)); // Wrap connection in Arc<Mutex<>>
+    let db_conn = Arc::new(Mutex::new(db_conn));
 
     let ai_manager = Arc::new(TokioMutex::new(ai::AIManager::new(&api_key)));
-    let withdrawals_enabled = Arc::new(Mutex::new(true)); // Withdrawals enabled by default
+    let withdrawals_enabled = Arc::new(Mutex::new(true));
 
     // Start backup system in the background
     let db_clone = Arc::clone(&db_conn);
@@ -68,6 +74,7 @@ async fn main() -> std::io::Result<()> {
             .route("/admin/ai", web::post().to(admin_ai_interface))
             .route("/admin/toggle_withdrawals", web::post().to(toggle_withdrawals))
             .route("/withdraw", web::post().to(handle_withdrawal))
+            .route("/webhook", web::post().to(webhook_handler)) // Added webhook route
     })
     .bind("0.0.0.0:8080")?
     .run()
@@ -136,7 +143,7 @@ async fn toggle_withdrawals(
     }
 
     let mut withdrawals_enabled = state.lock().unwrap();
-    *withdrawals_enabled = !*withdrawals_enabled; // Toggle the state
+    *withdrawals_enabled = !*withdrawals_enabled;
 
     let status = if *withdrawals_enabled {
         "Withdrawals are now ENABLED."
