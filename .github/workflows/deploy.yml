@@ -22,7 +22,14 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source "$HOME/.cargo/env"
       
+      - name: Install Python and PyTorch
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install torch
+      
       - name: Build Rust Project
+        env:
+          LIBTORCH_USE_PYTORCH: "1"
         run: |
           cargo build --release
       
