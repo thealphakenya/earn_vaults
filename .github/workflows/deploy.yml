@@ -22,9 +22,9 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install Railway CLI
+      - name: Install Railway CLI (with fallback)
         run: |
-          curl -fsSL https://railway.app/install.sh | sh
+          curl -fsSL https://railway.app/install.sh | sh || npm install -g @railway/cli
           export PATH="$HOME/.railway/bin:$PATH"
 
       - name: Deploy to Railway
