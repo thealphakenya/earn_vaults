@@ -22,10 +22,10 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source "$HOME/.cargo/env"
       
-      - name: Install Python and PyTorch
+      - name: Install Python and PyTorch 2.0.0
         run: |
           python3 -m pip install --upgrade pip
-          pip install torch
+          pip install torch==2.0.0
       
       - name: Build Rust Project
         env:
