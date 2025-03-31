@@ -5,7 +5,7 @@
   "rust-analyzer.procMacro.enable": true,
   "rust-analyzer.hover.actions.debug": true,
   "rust-analyzer.hover.actions.gotoTypeDef": true,
-  
+
   // Crates settings
   "crates.enableCargoWatcher": true,
 
@@ -23,7 +23,7 @@
   "errorLens.infoLevel": "info",
   "errorLens.hintLevel": "hint",
   "errorLens.messageMaxChars": 200,
-  
+
   // GitLens settings
   "gitlens.currentLine.enabled": true,
   "gitlens.hovers.enabled": true,
@@ -49,9 +49,6 @@
     "https://json.schemastore.org/github-workflow.json": ".github/workflows/*"
   },
 
-  // Docker settings
-  "docker.dockerPath": "/usr/bin/docker",
-  
   // VS Code settings
   "editor.formatOnSave": true,
   "editor.tabSize": 4,
@@ -60,10 +57,10 @@
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "explicit"
   },
-  
+
   // Terminal settings
   "terminal.integrated.shell.windows": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-  
+
   // Enable auto-save
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000
