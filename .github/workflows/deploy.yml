@@ -72,7 +72,8 @@ jobs:
 
       - name: Deploy to Railway (with retry)
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          # WARNING: Hardcoding your project token is insecure.
+          RAILWAY_TOKEN: "eac5e23c-3934-491f-a070-f6e559c76831"
         run: |
           for i in {1..3}; do
             railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "Deployment" && break
