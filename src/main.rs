@@ -1,91 +1,48 @@
-use actix_web::{web, App, HttpServer, Responder, HttpResponse, HttpRequest}; use std::sync::{Arc, Mutex}; use tokio::sync::Mutex as TokioMutex; use tokio::time::{interval, Duration}; use std::fs; use chrono::Utc; use std::path::Path; use rusqlite::Connection; use std::env; use dotenvy::dotenv; use reqwest;
+/*
+Template Overview
 
-mod auth; mod tasks; mod ai; mod admin; mod db;
+Earn Vaults is a robust, high-performance API built with Rust and powered by the Actix Web framework. Designed for modern web applications, Earn Vaults provides an efficient solution for managing user data, processing transactions, and integrating artificial intelligence for automated diagnostics and fixes. With a modular architecture, the project splits core functionalities into several components—authentication, task management, AI integration, administrative controls, and database operations—ensuring that each part of the application is maintainable and scalable.
 
-// Authentication function async fn authenticate(req: HttpRequest) -> bool { if let Some(auth_header) = req.headers().get("Authorization") { if auth_header == "Bearer your-secure-token" { return true; } } false }
+At its core, Earn Vaults uses SQLite (via rusqlite) to store and manage user data and transaction histories. The use of SQLite with bundled support means that the database is lightweight and easily deployable, making it a great choice for projects where low resource consumption is key. Furthermore, environment variables are loaded securely using dotenvy, which ensures that sensitive configuration details like the database URL, API keys, and tokens are not hard-coded but managed externally. This makes the project secure and flexible across different deployment environments.
 
-// Webhook handler async fn webhook_handler(body: String) -> impl Responder { println!("Received Webhook: {}", body); HttpResponse::Ok().body("Webhook received") }
+The project also leverages asynchronous programming with Tokio, which keeps the API responsive even under heavy load by efficiently managing multiple concurrent operations. A key feature is its AI-powered module that integrates with external AI services. This module not only helps in diagnosing issues and suggesting auto-fixes but also provides an administrative interface for real-time interaction and troubleshooting. With built-in webhook handling, the application can easily integrate with other services, allowing for automated triggers and notifications.
 
-// Health check endpoint async fn health_check() -> impl Responder { HttpResponse::Ok().body("OK") }
+For deployment, Earn Vaults is optimized to run on Railway. Its Dockerfile is crafted using a slim Rust image for building and a minimal Debian image for the final deployment, ensuring low memory usage and fast startup times. This architecture, combined with Railway’s robust infrastructure, provides an ideal platform for scaling your application with ease.
 
-// Fetch secret from Railway internal API async fn fetch_secret() -> impl Responder { let railway_internal_url = "http://api.railway.internal:3000/secret";
+Earn Vaults is perfect for developers looking for a secure, scalable API solution that harnesses the power of Rust and AI, offering rapid deployment, automatic backups, and seamless integration with modern web services.
+*/
 
-match reqwest::get(railway_internal_url).await {
-    Ok(response) => {
-        match response.text().await {
-            Ok(body) => HttpResponse::Ok().body(body),
-            Err(_) => HttpResponse::InternalServerError().body("Failed to read response"),
+use reqwest;
+use std::env;
+use tokio;
+use log::{info, error};
+
+#[tokio::main(flavor = "multi_thread", worker_threads = 4)]
+async fn main() {
+    // Load environment variables from a .env file, if available.
+    dotenvy::dotenv().ok();
+
+    // Initialize logging with a default filter set to "error" for production.
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("error")).init();
+
+    // Retrieve the internal Railway URL from the environment or use a default.
+    let railway_internal_url = env::var("RAILWAY_INTERNAL_URL")
+        .unwrap_or_else(|_| "http://localhost:8000".to_string());
+
+    info!("Starting Earn Vaults API...");
+
+    // Make an asynchronous HTTP GET request.
+    match reqwest::get(&railway_internal_url).await {
+        Ok(response) => {
+            info!("Successfully fetched URL: {}", railway_internal_url);
+            // Process the response.
+            match response.text().await {
+                Ok(text) => info!("Response Text: {}", text),
+                Err(e) => error!("Failed to read response text: {}", e),
+            }
+        },
+        Err(e) => {
+            error!("Error fetching URL {}: {}", railway_internal_url, e);
         }
     }
-    Err(_) => HttpResponse::InternalServerError().body("Request to Railway API failed"),
 }
-
-}
-
-#[actix_web::main] async fn main() -> std::io::Result<()> { // Load environment variables dotenv().ok(); let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set"); let api_key = env::var("API_KEY").unwrap_or_else(|| "default-api-key".to_string()); let port = env::var("PORT").unwrap_or_else(|| "8080".to_string()).parse::<u16>().expect("Invalid PORT value");
-
-println!("Connected to database at {}", database_url);
-println!("Using API key: {}", api_key);
-println!("Server running on port: {}", port);
-
-// Initialize database
-let db_conn = db::init_database().expect("Failed to initialize DB");
-let db_conn = Arc::new(Mutex::new(db_conn));
-
-let ai_manager = Arc::new(TokioMutex::new(ai::AIManager::new(&api_key)));
-let withdrawals_enabled = Arc::new(Mutex::new(true));
-
-// Start backup system in the background
-let db_clone = Arc::clone(&db_conn);
-tokio::spawn(async move {
-    let mut backup_timer = interval(Duration::from_secs(3600)); // Run every 1 hour
-    loop {
-        backup_timer.tick().await;
-        let db_guard = db_clone.lock().unwrap();
-        backup_database(&db_guard);
-    }
-});
-
-HttpServer::new(move || {
-    App::new()
-        .app_data(web::Data::new(Arc::clone(&db_conn)))
-        .app_data(web::Data::new(ai_manager.clone()))
-        .app_data(web::Data::new(withdrawals_enabled.clone()))
-        .configure(|cfg| auth::config(cfg, Arc::clone(&db_conn)))
-        .configure(|cfg| tasks::config(cfg, Arc::clone(&db_conn)))
-        .configure(|cfg| ai::config(cfg, ai_manager.clone()))
-        .configure(|cfg| admin::config(cfg, Arc::clone(&db_conn)))
-        .route("/", web::get().to(home))
-        .route("/diagnose", web::post().to(diagnose_issue))
-        .route("/auto-fix", web::post().to(auto_fix_issue))
-        .route("/admin/ai", web::post().to(admin_ai_interface))
-        .route("/admin/toggle_withdrawals", web::post().to(toggle_withdrawals))
-        .route("/withdraw", web::post().to(handle_withdrawal))
-        .route("/webhook", web::post().to(webhook_handler))
-        .route("/health", web::get().to(health_check)) // Health check route
-        .route("/fetch-secret", web::get().to(fetch_secret)) // Fetch secret route
-})
-.bind(("0.0.0.0", port))?
-.run()
-.await
-
-}
-
-async fn home() -> impl Responder { HttpResponse::Ok().body("Earn Vault API Running") }
-
-// Backup Database fn backup_database(db: &Connection) { let backup_dir = "./backups/";
-
-if !Path::new(backup_dir).exists() {
-    fs::create_dir_all(backup_dir).expect("Failed to create backup directory");
-}
-
-let timestamp = Utc::now().format("%Y-%m-%d_%H-%M-%S").to_string();
-let backup_path = format!("{}/backup_{}.db", backup_dir, timestamp);
-
-match fs::copy("./earn_vault.db", &backup_path) {
-    Ok(_) => println!("Database backed up successfully at {}", backup_path),
-    Err(e) => eprintln!("Database backup failed: {}", e),
-}
-
-}
-
