@@ -8,7 +8,8 @@
       "program": "${workspaceFolder}/target/debug/earn_vault",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "terminal": "integrated"
+      "terminal": "integrated",
+      "preLaunchTask": "Build Earn Vault (Debug)"
     },
     {
       "name": "Run Earn Vault (Release)",
@@ -17,7 +18,8 @@
       "program": "${workspaceFolder}/target/release/earn_vault",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "terminal": "integrated"
+      "terminal": "integrated",
+      "preLaunchTask": "Build Earn Vault (Release)"
     }
   ]
 }
