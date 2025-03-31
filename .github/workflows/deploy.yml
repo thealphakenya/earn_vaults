@@ -71,9 +71,12 @@ jobs:
           BACKUP_DIR: ${{ secrets.BACKUP_DIR }}
 
       - name: Deploy to Railway (with retry)
+        env:
+          # Replace the value below with your project token or use a GitHub secret
+          RAILWAY_TOKEN: "eac5e23c-3934-491f-a070-f6e559c76831"
         run: |
           for i in {1..3}; do
-            railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "Deployment" -- --token "eac5e23c-3934-491f-a070-f6e559c76831" && break
+            railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "Deployment" && break
             echo "Deployment failed, retrying in 10 seconds ($i/3)..."
             sleep 10
           done
