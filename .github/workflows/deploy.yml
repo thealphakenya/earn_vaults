@@ -11,29 +11,28 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      
+
       - name: Install Railway CLI (with fallback)
         run: |
           curl -fsSL https://railway.app/install.sh | sh || npm install -g @railway/cli
           export PATH="$HOME/.railway/bin:$PATH"
-      
+
       - name: Install Rust Toolchain
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source "$HOME/.cargo/env"
-      
-      - name: Install Python and PyTorch
+
+      - name: Install Python and PyTorch 2.4.0
         run: |
           python3 -m pip install --upgrade pip
-          pip install torch
-      
+          pip install torch==2.4.0
+
       - name: Build Rust Project
         env:
           LIBTORCH_USE_PYTORCH: "1"
-          LIBTORCH_BYPASS_VERSION_CHECK: "1"
         run: |
           cargo build --release
-      
+
       - name: Set Up Environment Variables (Optional)
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
@@ -42,7 +41,7 @@ jobs:
           echo "RAILWAY_ENVIRONMENT=${{ secrets.RAILWAY_ENVIRONMENT }}" >> .env
           echo "BACKUP_DIR=${{ secrets.BACKUP_DIR }}" >> .env
         shell: bash
-      
+
       - name: Run Rust Project
         run: |
           ./target/release/earn_vault &
@@ -52,7 +51,7 @@ jobs:
           PORT: ${{ secrets.PORT }}
           RAILWAY_ENVIRONMENT: ${{ secrets.RAILWAY_ENVIRONMENT }}
           BACKUP_DIR: ${{ secrets.BACKUP_DIR }}
-      
+
       - name: Deploy to Railway (with retry)
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
