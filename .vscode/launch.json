@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Earn Vault",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/target/debug/earn_vault",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated"
+    },
+    {
+      "name": "Run Earn Vault (Release)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/target/release/earn_vault",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "terminal": "integrated"
+    }
+  ]
+}
