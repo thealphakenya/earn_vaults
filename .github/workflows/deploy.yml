@@ -75,11 +75,11 @@ jobs:
           echo "Waiting 10 seconds for the service to start..."
           sleep 10
 
-      - name: Login to Railway CLI
+      - name: Login to Railway CLI in CI mode
         env:
           RAILWAY_TOKEN: "${{ secrets.RAILWAY_TOKEN }}"
         run: |
-          railway login --token "${RAILWAY_TOKEN}"
+          railway login --ci
 
       - name: Deploy to Railway (with retry)
         run: |
