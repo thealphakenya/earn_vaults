@@ -63,5 +63,13 @@
 
   // Enable auto-save
   "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000
+  "files.autoSaveDelay": 1000,
+
+  // New Terminal Settings
+  "terminal.integrated.commandsToSkipShell": [
+    "workbench.action.files.save",
+    "editor.action.formatDocument"
+  ],
+  "terminal.integrated.sendKeybindingsToShell": true,
+  "terminal.integrated.allowChords": true
 }
