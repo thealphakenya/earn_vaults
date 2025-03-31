@@ -1,16 +1,16 @@
 {
   // Rust Analyzer settings
   "rust-analyzer.cargo.runBuildScripts": true,
-  "rust-analyzer.checkOnSave.command": "clippy",
-  "rust-analyzer.procMacro.enable": true,
+  "rust-analyzer.checkOnSave.command": "clippy", // Automatically run Clippy for linting
+  "rust-analyzer.procMacro.enable": true, // Enable procedural macros
   "rust-analyzer.hover.actions.debug": true,
   "rust-analyzer.hover.actions.gotoTypeDef": true,
 
   // Crates settings
-  "crates.enableCargoWatcher": true,
+  "crates.enableCargoWatcher": true, // Automatically refresh the crates list
 
   // Better TOML settings
-  "better-toml.highlighting.enabled": true,
+  "better-toml.highlighting.enabled": true, // Enable TOML syntax highlighting
 
   // VSCode LLDB settings
   "lldb.expressions.command": "interpreter",
@@ -33,7 +33,7 @@
   "gitlens.views.lineHistory.enabled": true,
 
   // Railway CLI settings (Ensure authentication)
-  "railway.authToken": "YOUR_RAILWAY_AUTH_TOKEN",
+  "railway.authToken": "YOUR_RAILWAY_AUTH_TOKEN", // Replace with actual Railway API token
 
   // REST Client settings
   "rest-client.showResponseInEditor": true,
@@ -54,8 +54,8 @@
   "editor.tabSize": 4,
   "editor.insertSpaces": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
   },
 
   // Terminal settings
@@ -65,11 +65,12 @@
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
 
-  // New Terminal Settings
-  "terminal.integrated.commandsToSkipShell": [
-    "workbench.action.files.save",
-    "editor.action.formatDocument"
-  ],
-  "terminal.integrated.sendKeybindingsToShell": true,
-  "terminal.integrated.allowChords": true
+  // Enable Rust Clippy for linting
+  "rust-analyzer.checkOnSave.command": "clippy",
+
+  // Enable automatic building with tasks and debugging
+  "tasks.runOnSave": {
+    "cmd": "cargo build",
+    "run": "true"
+  }
 }

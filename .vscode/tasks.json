@@ -10,7 +10,8 @@
         "isDefault": true
       },
       "problemMatcher": ["$rustc"],
-      "detail": "Builds the Earn Vault app in debug mode"
+      "detail": "Builds the Earn Vault app in debug mode",
+      "dependsOn": ["Run Earn Vault (Debug)"]
     },
     {
       "label": "Build Earn Vault (Release)",
@@ -21,7 +22,24 @@
         "isDefault": false
       },
       "problemMatcher": ["$rustc"],
-      "detail": "Builds the Earn Vault app in release mode"
+      "detail": "Builds the Earn Vault app in release mode",
+      "dependsOn": ["Run Earn Vault (Release)"]
+    },
+    {
+      "label": "Run Earn Vault (Debug)",
+      "type": "shell",
+      "command": "${workspaceFolder}/target/debug/earn_vault",
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Runs the Earn Vault app in debug mode"
+    },
+    {
+      "label": "Run Earn Vault (Release)",
+      "type": "shell",
+      "command": "${workspaceFolder}/target/release/earn_vault",
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Runs the Earn Vault app in release mode"
     }
   ]
 }
