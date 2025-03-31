@@ -70,10 +70,12 @@ jobs:
           RAILWAY_ENVIRONMENT: ${{ secrets.RAILWAY_ENVIRONMENT }}
           BACKUP_DIR: ${{ secrets.BACKUP_DIR }}
 
+      - name: Wait for Service Startup
+        run: |
+          echo "Waiting 10 seconds for the service to start..."
+          sleep 10
+
       - name: Deploy to Railway (with retry)
-        env:
-          # Replace the value below with your project token or use a GitHub secret
-          RAILWAY_TOKEN: "eac5e23c-3934-491f-a070-f6e559c76831"
         run: |
           for i in {1..3}; do
             railway up --service "705a3574-eaee-44d8-9dac-187f7524a6ad" --environment "Deployment" && break

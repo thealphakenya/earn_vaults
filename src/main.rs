@@ -16,6 +16,7 @@ use reqwest;
 use std::env;
 use tokio;
 use log::{info, error};
+use std::{thread, time};
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 4)]
 async fn main() {
@@ -25,17 +26,22 @@ async fn main() {
     // Initialize logging with a default filter set to "error" for production.
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("error")).init();
 
-    // Retrieve the internal Railway URL from the environment or use a default.
-    let railway_internal_url = env::var("RAILWAY_INTERNAL_URL")
-        .unwrap_or_else(|_| "http://localhost:8000".to_string());
+    // Retrieve the internal service URL from the environment.
+    // If not set, default to "http://localhost:8080" (make sure this matches your server port).
+    let internal_service_url = env::var("RAILWAY_INTERNAL_URL")
+        .unwrap_or_else(|_| "http://localhost:8080".to_string());
 
     info!("Starting Earn Vaults API...");
-    info!("Using internal service URL: {}", railway_internal_url);
+    info!("Using internal service URL: {}", internal_service_url);
+
+    // Optional: wait a few seconds to ensure the server is up before making the HTTP request.
+    let delay = time::Duration::from_secs(5);
+    thread::sleep(delay);
 
     // Make an asynchronous HTTP GET request using the configurable URL.
-    match reqwest::get(&railway_internal_url).await {
+    match reqwest::get(&internal_service_url).await {
         Ok(response) => {
-            info!("Successfully fetched URL: {}", railway_internal_url);
+            info!("Successfully fetched URL: {}", internal_service_url);
             // Process the response text.
             match response.text().await {
                 Ok(text) => info!("Response Text: {}", text),
@@ -43,7 +49,7 @@ async fn main() {
             }
         },
         Err(e) => {
-            error!("Error fetching URL {}: {}", railway_internal_url, e);
+            error!("Error fetching URL {}: {}", internal_service_url, e);
         }
     }
 }
