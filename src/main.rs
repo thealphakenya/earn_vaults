@@ -30,12 +30,13 @@ async fn main() {
         .unwrap_or_else(|_| "http://localhost:8000".to_string());
 
     info!("Starting Earn Vaults API...");
+    info!("Using internal service URL: {}", railway_internal_url);
 
-    // Make an asynchronous HTTP GET request.
+    // Make an asynchronous HTTP GET request using the configurable URL.
     match reqwest::get(&railway_internal_url).await {
         Ok(response) => {
             info!("Successfully fetched URL: {}", railway_internal_url);
-            // Process the response.
+            // Process the response text.
             match response.text().await {
                 Ok(text) => info!("Response Text: {}", text),
                 Err(e) => error!("Failed to read response text: {}", e),
