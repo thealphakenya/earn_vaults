@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Earn Vault (Debug)",
+      "label": "Build Earn Vault (Debug) - Rust",
       "type": "shell",
       "command": "cargo build",
       "group": {
@@ -10,11 +10,24 @@
         "isDefault": true
       },
       "problemMatcher": ["$rustc"],
-      "detail": "Builds the Earn Vault app in debug mode",
-      "dependsOn": ["Run Earn Vault (Debug)"]
+      "detail": "Builds the Earn Vault app in debug mode using MSVC",
+      "dependsOn": [],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "clear": true
+      },
+      "watch": {
+        "files": [
+          "${workspaceFolder}/src/**/*.rs"
+        ]
+      }
     },
     {
-      "label": "Build Earn Vault (Release)",
+      "label": "Build Earn Vault (Release) - Rust",
       "type": "shell",
       "command": "cargo build --release",
       "group": {
@@ -22,24 +35,61 @@
         "isDefault": false
       },
       "problemMatcher": ["$rustc"],
-      "detail": "Builds the Earn Vault app in release mode",
-      "dependsOn": ["Run Earn Vault (Release)"]
+      "detail": "Builds the Earn Vault app in release mode using MSVC",
+      "dependsOn": [],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "clear": true
+      },
+      "watch": {
+        "files": [
+          "${workspaceFolder}/src/**/*.rs"
+        ]
+      }
     },
     {
-      "label": "Run Earn Vault (Debug)",
+      "label": "Build Earn Vault (Debug) - MSVC",
       "type": "shell",
-      "command": "${workspaceFolder}/target/debug/earn_vault",
-      "group": "build",
-      "problemMatcher": [],
-      "detail": "Runs the Earn Vault app in debug mode"
+      "command": "cl",
+      "args": [
+        "/EHsc",
+        "/Zi",
+        "/DEBUG",
+        "/D_DEBUG",
+        "/Fo${workspaceFolder}/target/debug/",
+        "/Fd${workspaceFolder}/target/debug/earn_vault.pdb",
+        "/c",
+        "${workspaceFolder}/src/*.cpp"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": ["$msCompile"],
+      "detail": "Builds the Earn Vault app in debug mode using MSVC"
     },
     {
-      "label": "Run Earn Vault (Release)",
+      "label": "Build Earn Vault (Release) - MSVC",
       "type": "shell",
-      "command": "${workspaceFolder}/target/release/earn_vault",
-      "group": "build",
-      "problemMatcher": [],
-      "detail": "Runs the Earn Vault app in release mode"
+      "command": "cl",
+      "args": [
+        "/O2",
+        "/DNDEBUG",
+        "/Fo${workspaceFolder}/target/release/",
+        "/Fd${workspaceFolder}/target/release/earn_vault.pdb",
+        "/c",
+        "${workspaceFolder}/src/*.cpp"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": ["$msCompile"],
+      "detail": "Builds the Earn Vault app in release mode using MSVC"
     }
   ]
 }

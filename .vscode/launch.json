@@ -2,24 +2,34 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Earn Vault",
-      "type": "lldb",
+      "name": "Debug Earn Vault (MSVC)",
+      "type": "cppvsdbg", 
       "request": "launch",
-      "program": "${workspaceFolder}/target/debug/earn_vault",
+      "program": "${workspaceFolder}/target/debug/earn_vault.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "terminal": "integrated",
-      "preLaunchTask": "Build Earn Vault (Debug)"
+      "preLaunchTask": "Build Earn Vault (Debug)",
+      "miDebuggerPath": "C:\\Path\\To\\Your\\MSVC\\Debugger\\dbgeng.dll",
+      "stopAtEntry": false,
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for stdlib",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "externalConsole": false
     },
     {
-      "name": "Run Earn Vault (Release)",
-      "type": "lldb",
+      "name": "Run Earn Vault (Release - MSVC)",
+      "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/target/release/earn_vault",
+      "program": "${workspaceFolder}/target/release/earn_vault.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "terminal": "integrated",
-      "preLaunchTask": "Build Earn Vault (Release)"
+      "preLaunchTask": "Build Earn Vault (Release)",
+      "stopAtEntry": false,
+      "externalConsole": false
     }
   ]
 }
