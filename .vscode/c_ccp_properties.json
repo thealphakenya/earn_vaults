@@ -5,14 +5,14 @@
       "name": "MSVC",
       "includePath": [
         "${workspaceFolder}/**",
-        "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/**/include",  // MSVC includes
-        "C:/Program Files (x86)/Windows Kits/10/Include/**"  // Windows SDK includes
+        "${env:VSINSTALLDIR}/VC/Tools/MSVC/**/include",  // MSVC includes
+        "${env:WindowsSDK_10_0_DIR}/Include/**"  // Windows SDK includes
       ],
       "defines": [],
-      "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-cl.exe",  // clang-cl compiler path
+      "compilerPath": "${env:VSINSTALLDIR}/VC/Tools/Llvm/bin/clang-cl.exe",  // clang-cl compiler path
       "cStandard": "c11",
       "cppStandard": "c++17",
-      "intelliSenseMode": "msvc-x64",  // MSVC IntelliSense mode
+      "intelliSenseMode": "msvc-x64",
       "compilerArgs": []
     }
   ]
