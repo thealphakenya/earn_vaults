@@ -3,20 +3,18 @@ use std::ffi::OsStr;
 use cc::Build;
 
 fn main() {
-    // Path to the C++ source directory
     let cpp_dir = "src/cpp/";
 
-    // Ensure that Cargo re-runs the build script if any C++ files change
+    // Ensure Cargo re-runs the build script if any C++ file changes
     println!("cargo:rerun-if-changed={}", cpp_dir);
 
-    // Initialize the build configuration
     let mut build = Build::new();
     
     // Enable C++ compilation
     build.cpp(true)
          .flag_if_supported("-std=c++17"); // Enable C++17 if supported
 
-    // Find and add all `.cpp` files to the build
+    // Find and add all `.cpp` files in the cpp directory to the build
     if let Ok(entries) = fs::read_dir(cpp_dir) {
         for entry in entries.filter_map(Result::ok) {
             let path = entry.path();
