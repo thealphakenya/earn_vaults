@@ -63,14 +63,5 @@
 
   // Enable auto-save
   "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000,
-
-  // Enable Rust Clippy for linting
-  "rust-analyzer.checkOnSave.command": "clippy",
-
-  // Enable automatic building with tasks and debugging
-  "tasks.runOnSave": {
-    "cmd": "cargo build",
-    "run": "true"
-  }
+  "files.autoSaveDelay": 1000
 }

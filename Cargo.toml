@@ -22,14 +22,14 @@ chrono = { version = "0.4", features = ["serde"] }
 
 # AI Dependencies
 rust-bert = "0.23.0"  # Expects tch ^0.17.0
-tch = "0.17.0"       # Aligned with rust-bert dependency
-openai = "1.0"       # OpenAI API for chat and automation
+tch = "0.17.0"        # Aligned with rust-bert dependency
+openai = "1.0"        # OpenAI API for chat and automation
 
 # Authentication
-jsonwebtoken = "9"   # JWT support
+jsonwebtoken = "9"    # JWT support
 
 # Environment variables
-dotenvy = "0.15"     # For loading .env files
+dotenvy = "0.15"      # For loading .env files
 
 # Logging
 log = "0.4"
@@ -43,6 +43,12 @@ fs_extra = "1.3"
 
 # HTTP client (for webhook and secret fetching)
 reqwest = { version = "0.11", features = ["json"] }
+
+# C++ integration (for compiling C++ code inside Rust)
+cc = "1.0"
+
+[build-dependencies]
+cc = "1.0"  # Required for compiling C++ code via build.rs
 
 [profile.release]
 opt-level = 3            # Maximum optimization level

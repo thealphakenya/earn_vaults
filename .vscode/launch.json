@@ -3,13 +3,13 @@
   "configurations": [
     {
       "name": "Debug Earn Vault (MSVC)",
-      "type": "cppvsdbg", 
+      "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/target/debug/earn_vault.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Build Earn Vault (Debug)",
-      "miDebuggerPath": "C:\\Path\\To\\Your\\MSVC\\Debugger\\dbgeng.dll",
+      "preLaunchTask": "Build Earn Vault (Debug)",  // Ensure the debug build task is run first
+      "miDebuggerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/RemoteDebugger/miDbg.exe",  // Path to debugger (ensure the path is correct)
       "stopAtEntry": false,
       "setupCommands": [
         {
@@ -18,7 +18,7 @@
           "ignoreFailures": true
         }
       ],
-      "externalConsole": false
+      "externalConsole": false  // Set to true if you want to use an external terminal for debugging
     },
     {
       "name": "Run Earn Vault (Release - MSVC)",
@@ -27,9 +27,9 @@
       "program": "${workspaceFolder}/target/release/earn_vault.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Build Earn Vault (Release)",
+      "preLaunchTask": "Build Earn Vault (Release)",  // Ensure the release build task is run first
       "stopAtEntry": false,
-      "externalConsole": false
+      "externalConsole": false  // Set to true if you want to use an external terminal for debugging
     }
   ]
 }

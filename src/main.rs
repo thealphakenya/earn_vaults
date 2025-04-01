@@ -1,16 +1,6 @@
-/*
-Template Overview
-
-Earn Vaults is a robust, high-performance API built with Rust and powered by the Actix Web framework. Designed for modern web applications, Earn Vaults provides an efficient solution for managing user data, processing transactions, and integrating artificial intelligence for automated diagnostics and fixes. With a modular architecture, the project splits core functionalities into several components—authentication, task management, AI integration, administrative controls, and database operations—ensuring that each part of the application is maintainable and scalable.
-
-At its core, Earn Vaults uses SQLite (via rusqlite) to store and manage user data and transaction histories. The use of SQLite with bundled support means that the database is lightweight and easily deployable, making it a great choice for projects where low resource consumption is key. Furthermore, environment variables are loaded securely using dotenvy, which ensures that sensitive configuration details like the database URL, API keys, and tokens are not hard-coded but managed externally. This makes the project secure and flexible across different deployment environments.
-
-The project also leverages asynchronous programming with Tokio, which keeps the API responsive even under heavy load by efficiently managing multiple concurrent operations. A key feature is its AI-powered module that integrates with external AI services. This module not only helps in diagnosing issues and suggesting auto-fixes but also provides an administrative interface for real-time interaction and troubleshooting. With built-in webhook handling, the application can easily integrate with other services, allowing for automated triggers and notifications.
-
-For deployment, Earn Vaults is optimized to run on Railway. Its Dockerfile is crafted using a slim Rust image for building and a minimal Debian image for the final deployment, ensuring low memory usage and fast startup times. This architecture, combined with Railway’s robust infrastructure, provides an ideal platform for scaling your application with ease.
-
-Earn Vaults is perfect for developers looking for a secure, scalable API solution that harnesses the power of Rust and AI, offering rapid deployment, automatic backups, and seamless integration with modern web services.
-*/
+extern "C" {
+    fn hello_world(); // Declare the C++ function
+}
 
 use reqwest;
 use std::env;
@@ -18,8 +8,36 @@ use tokio;
 use log::{info, error};
 use std::{thread, time};
 
+/// Earn Vaults: High-Performance API
+///
+/// # Overview
+/// Earn Vaults is a robust, high-performance API built with Rust and powered by the Actix Web framework.
+/// Designed for modern web applications, it provides efficient solutions for managing user data,
+/// processing transactions, and integrating AI for automated diagnostics and fixes.
+///
+/// # Architecture
+/// - **Authentication Module**: Secure user authentication with JWT.
+/// - **Task Management**: Handles various asynchronous jobs efficiently.
+/// - **AI Integration**: Provides automated diagnostics and fixes.
+/// - **Database Operations**: Uses SQLite (`rusqlite`) with bundled support.
+/// - **Environment Management**: Securely loads environment variables with `dotenvy`.
+///
+/// # Performance
+/// - Built using **Tokio** for high concurrency.
+/// - Uses **SQLite (rusqlite)** for lightweight, fast transactions.
+/// - **AI-powered module** integrated with OpenAI services.
+///
+/// # Deployment
+/// - Optimized for **Railway**.
+/// - Uses a **minimal Docker image** for fast deployment.
+/// - Supports **automatic backups** and **webhook handling**.
+
 #[tokio::main(flavor = "multi_thread", worker_threads = 4)]
 async fn main() {
+    unsafe {
+        hello_world(); // Call the C++ function
+    }
+
     // Load environment variables from a .env file, if available.
     dotenvy::dotenv().ok();
 

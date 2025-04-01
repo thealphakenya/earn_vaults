@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Earn Vault (Debug) - Rust",
+      "label": "Build Earn Vault (Debug)",
       "type": "shell",
       "command": "cargo build",
       "group": {
@@ -10,7 +10,7 @@
         "isDefault": true
       },
       "problemMatcher": ["$rustc"],
-      "detail": "Builds the Earn Vault app in debug mode using MSVC",
+      "detail": "Builds the Earn Vault app in debug mode using MSVC for Rust",
       "dependsOn": [],
       "runOptions": {
         "runOn": "folderOpen"
@@ -27,7 +27,7 @@
       }
     },
     {
-      "label": "Build Earn Vault (Release) - Rust",
+      "label": "Build Earn Vault (Release)",
       "type": "shell",
       "command": "cargo build --release",
       "group": {
@@ -35,7 +35,7 @@
         "isDefault": false
       },
       "problemMatcher": ["$rustc"],
-      "detail": "Builds the Earn Vault app in release mode using MSVC",
+      "detail": "Builds the Earn Vault app in release mode using MSVC for Rust",
       "dependsOn": [],
       "runOptions": {
         "runOn": "folderOpen"
@@ -63,14 +63,28 @@
         "/Fo${workspaceFolder}/target/debug/",
         "/Fd${workspaceFolder}/target/debug/earn_vault.pdb",
         "/c",
-        "${workspaceFolder}/src/*.cpp"
+        "${workspaceFolder}/src/**/*.cpp"
       ],
       "group": {
         "kind": "build",
         "isDefault": false
       },
       "problemMatcher": ["$msCompile"],
-      "detail": "Builds the Earn Vault app in debug mode using MSVC"
+      "detail": "Builds the Earn Vault app in debug mode using MSVC for C++",
+      "dependsOn": [],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "clear": true
+      },
+      "watch": {
+        "files": [
+          "${workspaceFolder}/src/**/*.cpp"
+        ]
+      }
     },
     {
       "label": "Build Earn Vault (Release) - MSVC",
@@ -82,14 +96,49 @@
         "/Fo${workspaceFolder}/target/release/",
         "/Fd${workspaceFolder}/target/release/earn_vault.pdb",
         "/c",
-        "${workspaceFolder}/src/*.cpp"
+        "${workspaceFolder}/src/**/*.cpp"
       ],
       "group": {
         "kind": "build",
         "isDefault": false
       },
       "problemMatcher": ["$msCompile"],
-      "detail": "Builds the Earn Vault app in release mode using MSVC"
+      "detail": "Builds the Earn Vault app in release mode using MSVC for C++",
+      "dependsOn": [],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "clear": true
+      },
+      "watch": {
+        "files": [
+          "${workspaceFolder}/src/**/*.cpp"
+        ]
+      }
+    },
+    {
+      "label": "Build C++ Code",
+      "type": "shell",
+      "command": "cl",
+      "args": [
+        "/EHsc",
+        "/Zi",
+        "/DEBUG",
+        "/D_DEBUG",
+        "/Fo${workspaceFolder}/target/debug/",
+        "/Fd${workspaceFolder}/target/debug/cpp_debug.pdb",
+        "/c", 
+        "${workspaceFolder}/src/cpp/*.cpp"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": ["$msCompile"],
+      "detail": "Compiles C++ files inside Rust project"
     }
   ]
 }
