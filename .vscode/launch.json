@@ -9,12 +9,7 @@
       "program": "${workspaceFolder}/target/debug/earn_vaults",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "env": {
-        "DATABASE_URL": "sqlite://earn_vault.db",
-        "PORT": "8080",
-        "RAILWAY_ENVIRONMENT": "development",
-        "API_KEY": "your-api-key"
-      },
+      "envFile": "${workspaceFolder}/.env",
       "stdio": ["console", "console", "console"]
     }
   ]
