@@ -8,8 +8,8 @@
       "program": "${workspaceFolder}/target/debug/earn_vault.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Build Earn Vault (Debug)",  // Ensure the debug build task is run first
-      "miDebuggerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/RemoteDebugger/miDbg.exe",  // Path to debugger (ensure the path is correct)
+      "preLaunchTask": "Build Earn Vault (Debug)",
+      "miDebuggerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/RemoteDebugger/miDbg.exe",
       "stopAtEntry": false,
       "setupCommands": [
         {
@@ -18,7 +18,7 @@
           "ignoreFailures": true
         }
       ],
-      "externalConsole": false  // Set to true if you want to use an external terminal for debugging
+      "externalConsole": false
     },
     {
       "name": "Run Earn Vault (Release - MSVC)",
@@ -27,9 +27,28 @@
       "program": "${workspaceFolder}/target/release/earn_vault.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Build Earn Vault (Release)",  // Ensure the release build task is run first
+      "preLaunchTask": "Build Earn Vault (Release)",
       "stopAtEntry": false,
-      "externalConsole": false  // Set to true if you want to use an external terminal for debugging
+      "externalConsole": false
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "d:/aaaaaaalways/earn_vaults/earn_vaults",
+      "program": "d:/aaaaaaalways/earn_vaults/earn_vaults/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }
