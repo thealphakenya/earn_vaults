@@ -1,4 +1,4 @@
-name: Deploy to Railway
+name: 🚀 Deploy to Railway
 
 on:
   push:
@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: ⬇️ Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set Up Node.js
+      - name: 🧰 Set Up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - name: Set Up Environment File
+      - name: 🔐 Set Up Environment Variables
         run: |
           cat <<EOF > .env
           DATABASE_URL=${{ secrets.DATABASE_URL }}
@@ -28,7 +28,7 @@ jobs:
           BACKUP_DIR=${{ secrets.BACKUP_DIR }}
           EOF
 
-      - name: Trigger Railway Redeploy via script.js
+      - name: 🚀 Trigger Railway Redeploy via script.js
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
