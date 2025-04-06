@@ -18,10 +18,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Create Environment File
+      - name: Set Up Environment File
         run: |
           cat <<EOF > .env
           DATABASE_URL=${{ secrets.DATABASE_URL }}
@@ -31,9 +28,8 @@ jobs:
           BACKUP_DIR=${{ secrets.BACKUP_DIR }}
           EOF
 
-      - name: Trigger Railway Redeploy via GraphQL
+      - name: Trigger Railway Redeploy via script.js
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
           node script.js "$RAILWAY_API_TOKEN"
-
