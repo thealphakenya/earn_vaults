@@ -1,0 +1,39 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Create Environment File
+        run: |
+          cat <<EOF > .env
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          API_KEY=${{ secrets.API_KEY }}
+          PORT=${{ secrets.PORT }}
+          RAILWAY_ENVIRONMENT=${{ secrets.RAILWAY_ENVIRONMENT }}
+          BACKUP_DIR=${{ secrets.BACKUP_DIR }}
+          EOF
+
+      - name: Trigger Railway Redeploy via GraphQL
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+        run: |
+          node script.js "$RAILWAY_API_TOKEN"
+
