@@ -1,8 +1,8 @@
 const https = require('https');
 
 const TOKEN = process.argv[2];
-const ENVIRONMENT_ID = "e9bef5e3-26ae-4868-b99a-22f6d3ae47f4"; // extracted from URL
-const SERVICE_ID = "6794a5bd-f6b0-46b2-a199-506694340d97";     // assumed to be the service ID
+const ENVIRONMENT_ID = "e9bef5e3-26ae-4868-b99a-22f6d3ae47f4";
+const SERVICE_ID = "ee4bdd61-21d2-4bde-bba4-4be716d1ed9d";
 
 // GraphQL mutation to trigger redeploy
 const data = JSON.stringify({
