@@ -1,4 +1,4 @@
-name: 🚀 Deploy to Railway
+name: Deploy to Railway (CLI)
 
 on:
   push:
@@ -10,15 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🧰 Set Up Node.js
+      - name: Set Up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - name: 🔐 Set Up Environment File
+      - name: Install Railway CLI
+        run: npm install -g railway
+
+      - name: Set Up .env file
         run: |
           cat <<EOF > .env
           DATABASE_URL=${{ secrets.DATABASE_URL }}
@@ -28,10 +31,9 @@ jobs:
           BACKUP_DIR=${{ secrets.BACKUP_DIR }}
           EOF
 
-      - name: 📦 Install node-fetch
-        run: npm install node-fetch@2
-
-      - name: 🚀 Trigger Railway Redeploy via script.js
+      - name: Deploy using Railway CLI
         env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-        run: node script.js "$RAILWAY_API_TOKEN"
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+        run: |
+          railway link 6794a5bd-f6b0-46b2-a199-506694340d97
+          railway up --service ee4bdd61-21d2-4bde-bba4-4be716d1ed9d
